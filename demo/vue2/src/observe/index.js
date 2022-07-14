@@ -1,5 +1,6 @@
 class Observer {
   constructor(data) {
+    // TODO 数组劫持区分
     this.walk(data);
   }
   walk(data) {
