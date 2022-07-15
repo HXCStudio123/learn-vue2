@@ -9,7 +9,7 @@
   <body>
     <div id="app">
       text
-      <span>{{msg}}</span>
+      <span>{{msg}}test{{age}}34567890</span>
     </div>
     <script src="./dist/vue.js"></script>
     <script>
@@ -17,6 +17,7 @@
         el: "#app",
         data: {
           msg: 1,
+          age: 22,
           arr: [{name: 1}],
         }
       });
@@ -24,3 +25,12 @@
     </script>
   </body>
 </html>
+
+<!-- 
+  vue的核心流程：
+  1. 响应式数据
+  2. 模板解析成ast语法树
+  3. 通过ast语法树生成render函数
+  4. render函数生成虚拟DOM
+  后续每次更新就只执行render函数
+ -->

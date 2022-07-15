@@ -25,6 +25,16 @@ const ALWAYS_NORMALIZE = 2
 
 // wrapper function for providing a more flexible interface
 // without getting yelled at by flow
+/**
+ * 创建节点
+ * @param {*} context 上下文
+ * @param {*} tag 标签名
+ * @param {*} data 数据
+ * @param {*} children 子节点
+ * @param {*} normalizationType 
+ * @param {*} alwaysNormalize 
+ * @returns 
+ */
 export function createElement (
   context: Component,
   tag: any,
