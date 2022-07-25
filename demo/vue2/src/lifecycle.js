@@ -1,4 +1,3 @@
-
 export function mountComponent(vm, el) {
   // render -> 虚拟DOM
   // _render 执行后得到虚拟DOM
@@ -11,5 +10,4 @@ export function initLifecycle(Vue) {
   Vue.prototype._update = function () {
     console.log("update");
   };
-  
 }
