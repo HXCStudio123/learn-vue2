@@ -48,7 +48,7 @@
       return genText(ast.text);
     }
     // _c("div", {id: "app"}, _c("span", null, _v(_s(msg) + "test"))
-    let code = `_v("${ast.tag}", ${ast.attrs.length ? genProps(ast.attrs) : null},${ast.children.length ? genChildren(ast.children) : null})`;
+    let code = `_c("${ast.tag}", ${ast.attrs.length ? genProps(ast.attrs) : null},${ast.children.length ? genChildren(ast.children) : null})`;
     return code;
   }
 
@@ -223,10 +223,9 @@
   }
 
   function initLifecycle(Vue) {
-    Vue.prototype._update = function () {
-      console.log("update");
+    Vue.prototype._update = function (vnode) {
+      console.log("update", vnode);
     };
-    
   }
 
   class Observer {
@@ -358,31 +357,32 @@
   }
 
   function createElement(context, tag, data, parent, ...children) {
-    // _v("div", {id:"app"},_v("text"),_v("span", null,_v(_s(msg)+"test"+_s(age)+"34567890")))
-    return new VNode(context, tag, data, children, parent, data.key);
+    // _c("div", {id:"app"},_v("text"),_c("span", null,_v(_s(msg)+"test"+_s(age)+"34567890")))}
+    return new VNode(context, tag, data, children, parent, data?.key);
   }
 
   function createTextVNode(context, text) {
-    return new VNode(context, tag, data, children, parent, data.key);
+    return new VNode(context, undefined, undefined, undefined, undefined, undefined, text );
   }
 
   class VNode {
-    constructor(context, tag, data, children, parent, key) {
+    constructor(context, tag, data, children, parent, key, text) {
       this.context = context;
       this.tag = tag;
       this.data = data;
       this.children = children;
       this.parent = parent;
+      this.text = text;
       this.key = key || null;
     }
   }
 
   function initRenders(Vue) {
     Vue.prototype._c = function (...args) {
-      return createElement(this, args);
+      return createElement(this, ...args);
     };
     Vue.prototype._v = function (...args) {
-      return createTextVNode(this);
+      return createTextVNode(this, ...args);
     };
     Vue.prototype._s = function (value) {
       return JSON.stringify(value);

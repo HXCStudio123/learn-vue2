@@ -341,6 +341,7 @@
           return;
         }
         console.log("set", newValue);
+        observe(newValue);
         value = newValue;
       },
     });

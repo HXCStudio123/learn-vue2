@@ -7,7 +7,17 @@ export function mountComponent(vm, el) {
 }
 
 export function initLifecycle(Vue) {
-  Vue.prototype._update = function () {
-    console.log("update");
+  Vue.prototype._update = function (vnode) {
+    console.log("update", vnode);
+    patch(vnode);
   };
+}
+
+// 渲染真实DOM
+function patch(vnode) {
+  if(vnode) {
+    // diff算法
+  } else {
+    // 初始化
+  }
 }

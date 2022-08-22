@@ -54,6 +54,7 @@ export function defineReactive(obj, key, value) {
         return;
       }
       console.log("set", newValue);
+      observe(newValue);
       value = newValue;
     },
   });
