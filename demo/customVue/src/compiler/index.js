@@ -8,11 +8,11 @@ import { parseHTML } from "./parse";
  * @param {*} template
  */
 export function compileToFunctions(template) {
-  // console.log(template);
   // 解析template
   const ast = parseHTML(template);
   // _c('div',{id: 'app'}, _c('span', null, _v(_s(msg) + 'text')))
   const { render } = generate(ast);
+  console.log(render)
   // 生成对应的处理函数
   return render;
 }

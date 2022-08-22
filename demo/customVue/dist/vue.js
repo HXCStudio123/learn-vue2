@@ -60,19 +60,14 @@
       return genText(ast);
     }
     // let code = `_c('div',{id: 'app'}, _c('span', null, _v(_s(msg))))`;
-    let code = `
-    _c(
-       '${ast.tag}', 
-        ${ast.attrs?.length ? genProps(ast.attrs) : null}, 
-        ${ast.children?.length ? genChildren(ast.children) : null}
-      )`;
+    let code = `_c('${ast.tag}', ${ast.attrs?.length ? genProps(ast.attrs) : null}, ${ast.children?.length ? genChildren(ast.children) : null})`;
     return code;
   }
 
   function generate (ast) {
     let code = genElement(ast);
-    code = `with(this){return ${code}}`;
-    let render = new Function(code);
+    code = `with(this) { return ${code} }`;
+    const render = new Function(code);
     return {
       render
     }
@@ -231,13 +226,23 @@
    * @param {*} template
    */
   function compileToFunctions(template) {
-    // console.log(template);
     // 解析template
     const ast = parseHTML(template);
     // _c('div',{id: 'app'}, _c('span', null, _v(_s(msg) + 'text')))
     const { render } = generate(ast);
+    console.log(render);
     // 生成对应的处理函数
     return render;
+  }
+
+  function mountComponent(vm, el) {
+    vm._update(vm._render());
+  }
+
+  function lifecycleMixin(Vue) {
+    Vue.prototype._update = function (vnode) {
+      console.log("---", vnode);
+    };
   }
 
   const def = function (obj, key, value) {
@@ -435,6 +440,46 @@
           opts.render = render;
         }
       }
+      mountComponent(vm);
+    };
+  }
+
+  function createElement(context, tag, key, data, children) {
+    return new VNode(context, tag, 1, key, data, children);
+  }
+  function createTextVNode(context, text) {
+    return new VNode(context, undefined, 2, undefined, undefined, undefined, text);
+  }
+  class VNode {
+    constructor(context, tag, type, key, data, children, text) {
+      this.context = context;
+      this.tag = tag;
+      this.type = type;
+      this.key = key;
+      this.text = text;
+      this.data = data;
+      this.children = children;
+    }
+  }
+
+  function renderMixin(Vue) {
+    Vue.prototype._render = function () {
+      const vm = this;
+      const vnode = vm.$options.render.call(vm);
+      console.log("虚拟节点", vnode);
+      return vnode;
+    };
+    // 创建元素节点
+    Vue.prototype._c = function (tag, data, ...children) {
+      return createElement(this, tag, data?.key, data, children);
+    };
+    // 创建文本节点
+    Vue.prototype._v = function (text) {
+      return createTextVNode(this, text);
+    };
+    // 字符串变更
+    Vue.prototype._s = function (val) {
+      return JSON.stringify(val)
     };
   }
 
@@ -443,6 +488,8 @@
   }
 
   initMixin(Vue);
+  lifecycleMixin(Vue);
+  renderMixin(Vue);
 
   return Vue;
 

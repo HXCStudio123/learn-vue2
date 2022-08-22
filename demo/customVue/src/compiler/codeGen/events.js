@@ -54,11 +54,6 @@ export function genElement(ast) {
     return genText(ast);
   }
   // let code = `_c('div',{id: 'app'}, _c('span', null, _v(_s(msg))))`;
-  let code = `
-    _c(
-       '${ast.tag}', 
-        ${ast.attrs?.length ? genProps(ast.attrs) : null}, 
-        ${ast.children?.length ? genChildren(ast.children) : null}
-      )`;
+  let code = `_c('${ast.tag}', ${ast.attrs?.length ? genProps(ast.attrs) : null}, ${ast.children?.length ? genChildren(ast.children) : null})`;
   return code;
 }

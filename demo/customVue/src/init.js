@@ -1,4 +1,5 @@
 import { compileToFunctions } from "./compiler/index";
+import { mountComponent } from "./lifecycle";
 import { initState } from "./state";
 
 function initMixin(Vue) {
@@ -32,12 +33,13 @@ function initMixin(Vue) {
       if (template) {
         // 如果有模板需要对模板进行编译，即 html -> ast语法树
         // 生成render函数，并挂载到opts上
-        const render = compileToFunctions(template)
+        const render = compileToFunctions(template);
         // jsx -> 渲染函数 h('div', { ... 描述 })
         // 这一步骤只有在打包时才会有，runtime Only 如果是runtime+compiler则是把编译过程放在运行时做
-        opts.render = render
+        opts.render = render;
       }
     }
+    mountComponent(vm, el);
   };
 }
 export default initMixin;
