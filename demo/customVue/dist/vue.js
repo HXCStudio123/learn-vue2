@@ -230,7 +230,6 @@
     const ast = parseHTML(template);
     // _c('div',{id: 'app'}, _c('span', null, _v(_s(msg) + 'text')))
     const { render } = generate(ast);
-    console.log(render);
     // 生成对应的处理函数
     return render;
   }
@@ -241,7 +240,7 @@
 
   function lifecycleMixin(Vue) {
     Vue.prototype._update = function (vnode) {
-      console.log("---", vnode);
+      console.log("入参", vnode);
     };
   }
 
@@ -466,7 +465,6 @@
     Vue.prototype._render = function () {
       const vm = this;
       const vnode = vm.$options.render.call(vm);
-      console.log("虚拟节点", vnode);
       return vnode;
     };
     // 创建元素节点

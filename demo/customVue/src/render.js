@@ -4,7 +4,6 @@ export function renderMixin(Vue) {
   Vue.prototype._render = function () {
     const vm = this;
     const vnode = vm.$options.render.call(vm);
-    console.log("虚拟节点", vnode);
     return vnode;
   };
   // 创建元素节点

@@ -4,6 +4,6 @@ export function mountComponent(vm, el) {
 
 export function lifecycleMixin(Vue) {
   Vue.prototype._update = function (vnode) {
-    console.log("---", vnode);
+    console.log("入参", vnode);
   };
 }
