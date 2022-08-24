@@ -1,232 +1,8 @@
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('console')) :
-  typeof define === 'function' && define.amd ? define(['console'], factory) :
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.Vue = factory());
 })(this, (function () { 'use strict';
-
-  const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g;
-
-  function genProps(props) {
-    let code = "";
-    props.forEach((prop) => {
-      code += `,${prop.name}:${JSON.stringify(prop.value)}`;
-    });
-    return `{${code.slice(1)}}`;
-  }
-  function genText(text) {
-    if (defaultTagRE.test(text)) {
-      // {{}} 特殊处理
-      let tokens = [];
-      let match;
-      let index = 0;
-      let lastIndex = (defaultTagRE.lastIndex = 0);
-      while ((match = defaultTagRE.exec(text))) {
-        index = match.index;
-        if (index > lastIndex) {
-          tokens.push(JSON.stringify(text.slice(lastIndex, index)));
-        }
-        tokens.push(`_s(${match[1]})`);
-        lastIndex = index + match[0].length;
-      }
-      if (lastIndex < text.length) {
-        tokens.push(JSON.stringify(text.slice(lastIndex)));
-      }
-      return `_v(${tokens.join("+")})`;
-    } else {
-      return `_v(${JSON.stringify(text)})`;
-    }
-  }
-  function genChildren(children) {
-    let code = "";
-    children.forEach((child) => {
-      code += "," + genElement(child);
-    });
-    return code.slice(1);
-  }
-  function genElement(ast) {
-    if (ast.type === 2) {
-      return genText(ast.text);
-    }
-    // _c("div", {id: "app"}, _c("span", null, _v(_s(msg) + "test"))
-    let code = `_c("${ast.tag}", ${ast.attrs.length ? genProps(ast.attrs) : null},${ast.children.length ? genChildren(ast.children) : null})`;
-    return code;
-  }
-
-  function generate(ast) {
-    let code = genElement(ast);
-    code = `with(this) { return ${code}}`;
-    const render = new Function(code);
-    return {
-      render
-    };
-  }
-
-  // 属性匹配：《 v-bind:test="msg" 》
-  // id="app"
-  const attribute =
-    /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s"'=<>`]+)))?/;
-  const ncname = `[a-zA-Z_][\\-\\.0-9_a-zA-Z]*`;
-  const qnameCapture = `((?:${ncname}\\:)?${ncname})`;
-  // 匹配开始的标签<div
-  const startTagOpen = new RegExp(`^<${qnameCapture}`); // 判断是否为开始标签的开头 <
-  // 匹配开始的结束标签>
-  const startTagClose = /^\s*(\/?)>/; // 判断是否为开始标签的结尾 >
-  // 匹配关闭标签 </div>
-  const endTag = new RegExp(`^<\\/${qnameCapture}[^>]*>`); // 判断是否为闭标签， </xxx>
-  /**
-   * <div id="app">
-        text
-        <span>{{msg}}</span>
-        <span>{{msg}}</span>
-      </div>
-    1. 确定组装的节点数据
-    2. 组装结构
-
-    词法分析：把语言拆成语义上不可分割的最小单元，及token
-    语法分析：将词法分析获取的token组装
-
-   * @param {*} html 
-   */
-  function parseHTML(html) {
-    // 堆栈推入，匹配开始关闭
-    let stack = [];
-    let root = null;
-    let currentParent = null;
-    while (html) {
-      let textEnd = html.indexOf("<");
-      if (textEnd === 0) {
-        const endTagMatch = html.match(endTag);
-        if (endTagMatch) {
-          end(endTagMatch.tagName);
-          advance(endTagMatch[0].length);
-          continue;
-        }
-        const startTagMatch = parseStartTag();
-        if (startTagMatch) {
-          start(startTagMatch.tagName, startTagMatch.attrs);
-          continue;
-        }
-      }
-      if (textEnd > 0) {
-        const text = html.substring(0, textEnd);
-        if (text) {
-          chars(text);
-          advance(text.length);
-        }
-      }
-    }
-    return root;
-
-    function advance(index) {
-      html = html.substring(index);
-    }
-    function parseStartTag() {
-      const start = html.match(startTagOpen);
-      if (start) {
-        // 开始标签
-        const match = {
-          tagName: start[1], // 标签名
-          attrs: [], // 属性
-        };
-        advance(start[0].length);
-        let end, attr;
-        while (
-          !(end = html.match(startTagClose)) &&
-          (attr = html.match(attribute))
-        ) {
-          match.attrs.push({
-            name: attr[1],
-            value: attr[3] || attr[4] || attr[5],
-          });
-          advance(attr[0].length);
-        }
-        if (end) {
-          advance(end[0].length);
-        }
-        return match;
-      }
-      return false;
-    }
-    function start(tag, attrs) {
-      const node = createASTElement(tag, attrs);
-      if (!root) {
-        root = node;
-      }
-      if (currentParent) {
-        currentParent.children.push(node);
-      }
-      stack.push(node);
-      currentParent = node;
-    }
-    function chars(text) {
-      text = text.replace(/\s/g, "");
-      if (text) {
-        currentParent.children.push({
-          type: 2,
-          text,
-          parent: currentParent
-        });
-      }
-    }
-    function end(tag) {
-      stack.pop();
-      if (stack.length) {
-        currentParent = stack[stack.length - 1];
-      }
-    }
-  }
-
-  // 创建Ast标签节点
-  function createASTElement(tag, attrs) {
-    return {
-      tag,
-      attrs,
-      tyep: 1,
-      children: [],
-      parent: null,
-    };
-  }
-
-  /**
-   * 模板引擎，
-   * 1. 解析html，生成ast语法树
-   * 2. 根据ast语法树生成render函数
-   * 3. render函数将
-   * @param {String} html
-   */
-  function compileToFunctions(html) {
-    const ast = parseHTML(html);
-    // 根据ast生成render函数
-    /**
-     * <div id="app">
-        text
-        <span>{{msg}}</span>
-      </div>
-
-      ast树
-
-      render(h) {
-        return h('div', [{id: "app"], h('span', null, null)}])
-      }
-      _c("div", {id: "app"}, _c("span", null, _v(_s(msg) + "test"))
-     */
-    const { render } = generate(ast);
-    return render;
-  }
-
-  function mountComponent(vm, el) {
-    // render -> 虚拟DOM
-    // _render 执行后得到虚拟DOM
-    // _update(虚拟DOM) -> 真实DOM
-    // 虚拟DOM -> 生成真实DOM
-    vm._update(vm._render());
-  }
-
-  function initLifecycle(Vue) {
-    Vue.prototype._update = function (vnode) {
-      console.log("update", vnode);
-    };
-  }
 
   class Observer {
     constructor(data) {
@@ -331,7 +107,7 @@
     // AST语法转换: 抽象
     // html -> ast -> js -> 虚拟DOM
     // runtime-only
-    // runtime-with-compiler
+    // runtime-with-compiler （采用这种，render函数自己生成的过程）
     Vue.prototype.$mount = function (el) {
       // 有render用render
       // 没有render看template
@@ -352,45 +128,7 @@
       }
       console.log(opts.render);
       // 页面的初渲染
-      mountComponent(vm);
-    };
-  }
-
-  function createElement(context, tag, data, parent, ...children) {
-    // _c("div", {id:"app"},_v("text"),_c("span", null,_v(_s(msg)+"test"+_s(age)+"34567890")))}
-    return new VNode(context, tag, data, children, parent, data?.key);
-  }
-
-  function createTextVNode(context, text) {
-    return new VNode(context, undefined, undefined, undefined, undefined, undefined, text );
-  }
-
-  class VNode {
-    constructor(context, tag, data, children, parent, key, text) {
-      this.context = context;
-      this.tag = tag;
-      this.data = data;
-      this.children = children;
-      this.parent = parent;
-      this.text = text;
-      this.key = key || null;
-    }
-  }
-
-  function initRenders(Vue) {
-    Vue.prototype._c = function (...args) {
-      return createElement(this, ...args);
-    };
-    Vue.prototype._v = function (...args) {
-      return createTextVNode(this, ...args);
-    };
-    Vue.prototype._s = function (value) {
-      return JSON.stringify(value);
-    };
-    Vue.prototype._render = function () {
-      const vm = this;
-      const vnode = vm.$options.render.call(vm);
-      console.log("vnode ", vnode);
+      mountComponent(vm, el);
     };
   }
 
@@ -399,8 +137,6 @@
   }
 
   initMixin(Vue);
-  initRenders(Vue);
-  initLifecycle(Vue);
 
   return Vue;
 

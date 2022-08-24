@@ -1,5 +1,3 @@
-import { compileToFunctions } from "./compile/index";
-import { mountComponent } from "./lifecycle";
 import { initState } from "./state";
 
 export function initMixin(Vue) {
@@ -19,7 +17,7 @@ export function initMixin(Vue) {
   // AST语法转换: 抽象
   // html -> ast -> js -> 虚拟DOM
   // runtime-only
-  // runtime-with-compiler
+  // runtime-with-compiler （采用这种，render函数自己生成的过程）
   Vue.prototype.$mount = function (el) {
     // 有render用render
     // 没有render看template

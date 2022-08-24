@@ -4,6 +4,7 @@ import { namespaceMap } from 'web/util/index'
 
 export function createElement (tagName: string, vnode: VNode): Element {
   const elm = document.createElement(tagName)
+  // 创建节点 选择框泽单独处理
   if (tagName !== 'select') {
     return elm
   }

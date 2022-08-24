@@ -16,6 +16,8 @@ export function renderMixin(Vue) {
   };
   // 字符串变更
   Vue.prototype._s = function (val) {
-    return JSON.stringify(val)
+    // console.log('---', val)
+    // return JSON.stringify(val)
+    return val
   };
 }

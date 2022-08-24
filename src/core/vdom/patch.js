@@ -30,6 +30,7 @@ import {
 
 export const emptyNode = new VNode("", {}, []);
 
+// 可能会操作DOM的操作
 const hooks = ["create", "activate", "update", "remove", "destroy"];
 
 function sameVnode(a, b) {
@@ -61,11 +62,10 @@ function createKeyToOldIdx(children, beginIdx, endIdx) {
   }
   return map;
 }
-
+// 生成patch函数
 export function createPatchFunction(backend) {
   let i, j;
   const cbs = {};
-
   const { modules, nodeOps } = backend;
 
   for (i = 0; i < hooks.length; ++i) {
@@ -76,7 +76,6 @@ export function createPatchFunction(backend) {
       }
     }
   }
-
   function emptyNodeAt(elm) {
     return new VNode(
       nodeOps.tagName(elm).toLowerCase(),
@@ -122,17 +121,17 @@ export function createPatchFunction(backend) {
   }
 
   let creatingElmInVPre = 0;
-/**
- * 生成真实节点
- * @param {*} vnode 
- * @param {*} insertedVnodeQueue 
- * @param {*} parentElm 
- * @param {*} refElm 
- * @param {*} nested 
- * @param {*} ownerArray 
- * @param {*} index 
- * @returns 
- */
+  /**
+   * 生成真实节点
+   * @param {*} vnode
+   * @param {*} insertedVnodeQueue
+   * @param {*} parentElm
+   * @param {*} refElm
+   * @param {*} nested
+   * @param {*} ownerArray
+   * @param {*} index
+   * @returns
+   */
   function createElm(
     vnode,
     insertedVnodeQueue,
@@ -180,7 +179,7 @@ export function createPatchFunction(backend) {
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode);
       setScope(vnode); // 设置 .vue 问卷中样式 scoped 的标签属性
-
+      console.log(vnode, vnode.elm);
       /* istanbul ignore if */
       if (__WEEX__) {
         // in Weex, the default insertion order is parent-first.
@@ -209,6 +208,8 @@ export function createPatchFunction(backend) {
           // vue 的事件绑定是用 addEventListener，直接给目标节点绑定事件，与 preact 一致；
           // 而 react 是使用事件合成机制，通过事件冒泡（事件委托）来实现，事件绑定在 document 上，通过冒泡方式来触发对应节点的事件
           invokeCreateHooks(vnode, insertedVnodeQueue);
+          console.log("结果", vnode);
+          debugger;
         }
         insert(parentElm, vnode.elm, refElm);
       }

@@ -68,6 +68,7 @@
     let code = genElement(ast);
     code = `with(this) { return ${code} }`;
     const render = new Function(code);
+    // console.log(render)
     return {
       render
     }
@@ -234,13 +235,87 @@
     return render;
   }
 
+  /**
+   * 虚拟DOM转真实DOM
+   * @param {*} oldVnode
+   * @param {*} vnode
+   */
+  function patch(oldVnode, vnode) {
+    if (oldVnode === vnode) {
+      return;
+    }
+    const isRealElement = oldVnode.nodeType;
+    if (isRealElement) {
+      // 获取真实元素
+      const elm = oldVnode;
+      const parentElm = elm.parentNode;
+      // 拿到父元素
+      const newElm = createElm(vnode);
+      parentElm.insertBefore(newElm, elm.nextSibling);
+      parentElm.removeChild(elm);
+    }
+  }
+
+  // 根据vnode创建真实DOM节点
+  function createElm(vnode, parentElm) {
+    // 初始化
+    const { tag, data, children, text } = vnode;
+    if (typeof tag === "string") {
+      // 创建标签，此时将真实节点和虚拟节点对应起来，为以后diff算法修改对应节点做准备
+      vnode.elm = document.createElement(tag);
+      if (data) {
+        updateProps(vnode.elm, data);
+      }
+      // 创建子节点
+      createChildren(vnode, children);
+    } else {
+      vnode.elm = document.createTextNode(text);
+    }
+    insert(parentElm, vnode.elm);
+    return vnode.elm;
+  }
+
+  function createChildren(vnode, children) {
+    if (Array.isArray(children)) {
+      for (let item of children) {
+        createElm(item, vnode.elm);
+      }
+    }
+  }
+
+  function insert(parent, elm) {
+    if (parent) {
+      parent.appendChild(elm);
+    }
+  }
+
+  // 属性值插入
+  function updateProps(el, props) {
+    for (let key in props) {
+      el.setAttribute(key, props[key]);
+    }
+  }
+
   function mountComponent(vm, el) {
+    vm.$el = el;
     vm._update(vm._render());
   }
 
   function lifecycleMixin(Vue) {
     Vue.prototype._update = function (vnode) {
-      console.log("入参", vnode);
+      const vm = this;
+      // const preVnode = vm._vnode;
+      // vm._vnode = vnode;
+      // console.log("入参", vnode, vm.$el);
+      // if (!preVnode) {
+      //   // 没有前置节点，表示是初始化DOM
+      //   vm.$el = patch(vm.$el, vnode);
+      // } else {
+      //   // 更新DOM
+      //   vm.$el = patch(vm.$el, vnode);
+      // }
+      console.log(vnode);
+      patch(vm.$el, vnode);
     };
   }
 
@@ -439,7 +514,7 @@
           opts.render = render;
         }
       }
-      mountComponent(vm);
+      mountComponent(vm, el);
     };
   }
 
@@ -477,7 +552,9 @@
     };
     // 字符串变更
     Vue.prototype._s = function (val) {
-      return JSON.stringify(val)
+      // console.log('---', val)
+      // return JSON.stringify(val)
+      return val
     };
   }
 
