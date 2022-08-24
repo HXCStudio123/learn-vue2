@@ -36,6 +36,11 @@
       // html -> ast -> js语法 -> 虚拟DOM
       // render函数 （ast -> 虚拟DOM）
       console.log(vm);
+
+      setTimeout(()=>{
+        vm.msg = '--测试--'
+        vm._update(vm._render())
+      }, 1000)
     </script>
   </body>
 </html>

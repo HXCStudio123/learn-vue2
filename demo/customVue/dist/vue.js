@@ -253,6 +253,7 @@
       const newElm = createElm(vnode);
       parentElm.insertBefore(newElm, elm.nextSibling);
       parentElm.removeChild(elm);
+      return newElm;
     }
   }
 
@@ -315,7 +316,9 @@
       //   vm.$el = patch(vm.$el, vnode);
       // }
       console.log(vnode);
-      patch(vm.$el, vnode);
+      // 新的dom元素赋值给vm
+      vm.$el = patch(vm.$el, vnode);
+      console.log(vm.$el);
     };
   }
 

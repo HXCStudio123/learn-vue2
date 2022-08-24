@@ -16,6 +16,7 @@ export function patch(oldVnode, vnode) {
     const newElm = createElm(vnode);
     parentElm.insertBefore(newElm, elm.nextSibling);
     parentElm.removeChild(elm);
+    return newElm;
   } else {
     // Diffi
   }

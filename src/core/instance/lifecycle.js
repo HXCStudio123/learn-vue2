@@ -359,7 +359,7 @@ export function callHook(vm: Component, hook: string) {
   pushTarget();
   const handlers = vm.$options[hook];
   const info = `${hook} hook`;
-  console.log("执行handlers：", handlers);
+  console.log("执行handlers：", handlers, vm.$options);
   if (handlers) {
     for (let i = 0, j = handlers.length; i < j; i++) {
       // 对生命周期添加错误事件拦截

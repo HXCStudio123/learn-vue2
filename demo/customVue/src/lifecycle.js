@@ -18,11 +18,18 @@ export function lifecycleMixin(Vue) {
     //   // 更新DOM
     //   vm.$el = patch(vm.$el, vnode);
     // }
-    console.log(vnode)
-    patch(vm.$el, vnode);
+    console.log(vnode);
+    // 新的dom元素赋值给vm
+    vm.$el = patch(vm.$el, vnode);
+    console.log(vm.$el);
   };
 }
-
+/**
+ * TODO callhook 和 事件发布订阅一起
+ * @param {*} vm
+ * @param {*} hook
+ */
 export function callHook(vm, hook) {
   console.log("hook");
+  // 挂载
 }
