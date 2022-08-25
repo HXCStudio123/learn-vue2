@@ -235,6 +235,64 @@
     return render;
   }
 
+  let id$1 = 0;
+  /**
+   * Dep依赖，其实也是被观察者
+   * 对在模板中被使用的（能触发get方法）数据，添加一个收集器
+   * 收集器上可以存放，当前引用该数据的视图实例，即Watcher
+   */
+   class Dep {
+    constructor() {
+      this.id = id$1++;
+      this.subs = [];
+      // this.subsId = new Set();
+    }
+    addSub(sub) {
+      this.subs.push(sub);
+      // if (!this.subsId.has(sub.id)) {
+      //   this.subsId.add(sub.id);
+      //   this.subs.push(sub);
+      //   // sub.add
+      // }
+    }
+    // 给watcher添加当前数据绑定
+    depend() {
+      if (Dep.target) {
+        Dep.target.addDep(this);
+      }
+    }
+    notify() {}
+  }
+
+  let id = 0;
+  /**
+   * 观察者
+   */
+  class Watcher {
+    constructor(vm, fn) {
+      this.id = id++;
+      this.getter = fn;
+      this.newDeps = [];
+      this.newDepsId = new Set();
+      this.get();
+    }
+    addDep(dep) {
+      // 去重
+      if (!this.newDepsId.has(dep.id)) {
+        // 建立 watcher -> dep 对应关系
+        this.newDeps.push(dep);
+        this.newDepsId.add(dep.id);
+        // 建立 dep -> watcher 对应关系
+        dep.addSub(this);
+      }
+    }
+    get() {
+      Dep.target = this;
+      this.getter();
+      Dep.target = this;
+    }
+  }
+
   /**
    * 虚拟DOM转真实DOM
    * @param {*} oldVnode
@@ -299,24 +357,23 @@
 
   function mountComponent(vm, el) {
     vm.$el = el;
-    vm._update(vm._render());
+    // 初渲染的时候初始化页面
+    /**
+     * 1. 初始化视图时，获取取的数据，触发数据劫持中的 get方法
+     * 2. 此时对dep来说视图已知，即Dep.target
+     * 3. 在get触发后，dep通知watcher对象，使其监听列表里添加当前的dep 即dep.denpend() -> Dep.target.addDep(this)
+     * 4. watcher被通知后，得知自己有需要添加的对象，此时建立双向的依赖关系
+     */
+    new Watcher(vm, () => {
+      vm._update(vm._render());
+    });
   }
 
   function lifecycleMixin(Vue) {
+    // 渲染真实DOM
     Vue.prototype._update = function (vnode) {
       const vm = this;
-      // const preVnode = vm._vnode;
-      // vm._vnode = vnode;
-      // console.log("入参", vnode, vm.$el);
-      // if (!preVnode) {
-      //   // 没有前置节点，表示是初始化DOM
-      //   vm.$el = patch(vm.$el, vnode);
-      // } else {
-      //   // 更新DOM
-      //   vm.$el = patch(vm.$el, vnode);
-      // }
-      console.log(vnode);
-      // 新的dom元素赋值给vm
+      // 新的dom元素赋值给vm，这样可以手动修改当前页面的DOM元素
       vm.$el = patch(vm.$el, vnode);
       console.log(vm.$el);
     };
@@ -347,7 +404,6 @@
 
   methods.forEach((method) => {
     newArrayProto[method] = function (...args) {
-      console.log("执行了自定义方法", args);
       let result = oldArrayProto[method].call(this, ...args);
       const ob = this.__ob__;
       // push unshift splice
@@ -365,7 +421,6 @@
       if (inserted) {
         ob.observeArray(inserted);
       }
-      console.log("新增数据", inserted);
       return result;
     };
   });
@@ -377,7 +432,7 @@
        * 因此在Vue2中需要写一些单独的api 比如 $set $delete
        */
       // 将__ob__变成不可枚举，这样循环的时候就无法枚举当前属性了
-      def(data, '__ob__', this);
+      def(data, "__ob__", this);
       // Object.defineProperty(data, "__ob__", {
       //   enumerable: false,
       //   value: this,
@@ -408,6 +463,7 @@
    * @param {*} val 键值
    */
   function defineReactive(obj, key, value) {
+    const dep = new Dep();
     // 对所有对象都进行属性劫持
     observe(value);
     Object.defineProperty(obj, key, {
@@ -415,6 +471,9 @@
       enumerable: true,
       get() {
         console.log("get", value);
+        if (Dep.target) {
+          dep.depend();
+        }
         return value;
       },
       set(newValue) {
@@ -517,6 +576,7 @@
           opts.render = render;
         }
       }
+      // 开始渲染页面
       mountComponent(vm, el);
     };
   }

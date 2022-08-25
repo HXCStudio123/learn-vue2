@@ -16,7 +16,6 @@ const methods = [
 
 methods.forEach((method) => {
   newArrayProto[method] = function (...args) {
-    console.log("执行了自定义方法", args);
     let result = oldArrayProto[method].call(this, ...args);
     const ob = this.__ob__;
     // push unshift splice
@@ -36,7 +35,6 @@ methods.forEach((method) => {
     if (inserted) {
       ob.observeArray(inserted);
     }
-    console.log("新增数据", inserted);
     return result;
   };
 });

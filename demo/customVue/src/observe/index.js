@@ -1,5 +1,6 @@
 import { def } from "../utils/index";
 import { newArrayProto } from "./array";
+import Dep from "./dep";
 
 class Observer {
   constructor(data) {
@@ -8,7 +9,7 @@ class Observer {
      * 因此在Vue2中需要写一些单独的api 比如 $set $delete
      */
     // 将__ob__变成不可枚举，这样循环的时候就无法枚举当前属性了
-    def(data, '__ob__', this)
+    def(data, "__ob__", this);
     // Object.defineProperty(data, "__ob__", {
     //   enumerable: false,
     //   value: this,
@@ -39,6 +40,7 @@ class Observer {
  * @param {*} val 键值
  */
 export function defineReactive(obj, key, value) {
+  const dep = new Dep();
   // 对所有对象都进行属性劫持
   observe(value);
   Object.defineProperty(obj, key, {
@@ -46,6 +48,9 @@ export function defineReactive(obj, key, value) {
     enumerable: true,
     get() {
       console.log("get", value);
+      if (Dep.target) {
+        dep.depend();
+      }
       return value;
     },
     set(newValue) {

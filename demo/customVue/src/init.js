@@ -39,6 +39,7 @@ function initMixin(Vue) {
         opts.render = render;
       }
     }
+    // 开始渲染页面
     mountComponent(vm, el);
   };
 }

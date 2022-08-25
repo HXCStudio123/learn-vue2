@@ -1,29 +1,30 @@
+import Watcher from "./observe/watcher";
 import { patch } from "./vdom/patch";
 
 export function mountComponent(vm, el) {
   vm.$el = el;
-  vm._update(vm._render());
+  // 初渲染的时候初始化页面
+  /**
+   * 1. 初始化视图时，获取取的数据，触发数据劫持中的 get方法
+   * 2. 此时对dep来说视图已知，即Dep.target
+   * 3. 在get触发后，dep通知watcher对象，使其监听列表里添加当前的dep 即dep.denpend() -> Dep.target.addDep(this)
+   * 4. watcher被通知后，得知自己有需要添加的对象，此时建立双向的依赖关系
+   */
+  new Watcher(vm, () => {
+    vm._update(vm._render());
+  });
 }
 
 export function lifecycleMixin(Vue) {
+  // 渲染真实DOM
   Vue.prototype._update = function (vnode) {
     const vm = this;
-    // const preVnode = vm._vnode;
-    // vm._vnode = vnode;
-    // console.log("入参", vnode, vm.$el);
-    // if (!preVnode) {
-    //   // 没有前置节点，表示是初始化DOM
-    //   vm.$el = patch(vm.$el, vnode);
-    // } else {
-    //   // 更新DOM
-    //   vm.$el = patch(vm.$el, vnode);
-    // }
-    console.log(vnode);
-    // 新的dom元素赋值给vm
+    // 新的dom元素赋值给vm，这样可以手动修改当前页面的DOM元素
     vm.$el = patch(vm.$el, vnode);
     console.log(vm.$el);
   };
 }
+
 /**
  * TODO callhook 和 事件发布订阅一起
  * @param {*} vm
