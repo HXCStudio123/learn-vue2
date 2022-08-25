@@ -17,7 +17,7 @@ export default class Watcher {
     if (!this.newDepsId.has(dep.id)) {
       // 建立 watcher -> dep 对应关系
       this.newDeps.push(dep);
-      this.newDepsId.add(dep.id)
+      this.newDepsId.add(dep.id);
       // 建立 dep -> watcher 对应关系
       dep.addSub(this);
     }
@@ -26,5 +26,8 @@ export default class Watcher {
     Dep.target = this;
     this.getter();
     Dep.target = this;
+  }
+  update() {
+    this.get();
   }
 }

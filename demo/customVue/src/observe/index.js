@@ -61,6 +61,7 @@ export function defineReactive(obj, key, value) {
       console.log("set", newValue);
       observe(newValue);
       value = newValue;
+      dep.notify();
     },
   });
 }
