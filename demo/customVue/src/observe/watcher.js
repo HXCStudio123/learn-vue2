@@ -5,11 +5,14 @@ let id = 0;
  * 观察者
  */
 export default class Watcher {
-  constructor(vm, fn) {
+  constructor(vm, fn, renderWatcher) {
     this.id = id++;
+    this.vm = vm;
+    this.renderWatcher = renderWatcher;
     this.getter = fn;
     this.newDeps = [];
     this.newDepsId = new Set();
+    // watcher初渲染
     this.get();
   }
   addDep(dep) {
@@ -25,7 +28,7 @@ export default class Watcher {
   get() {
     Dep.target = this;
     this.getter();
-    Dep.target = this;
+    Dep.target = null;
   }
   update() {
     this.get();

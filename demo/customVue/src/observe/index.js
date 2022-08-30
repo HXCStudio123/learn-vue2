@@ -40,6 +40,7 @@ class Observer {
  * @param {*} val 键值
  */
 export function defineReactive(obj, key, value) {
+  // 对每一个属性都做增加一个dep，用作收集依赖的watcher
   const dep = new Dep();
   // 对所有对象都进行属性劫持
   observe(value);

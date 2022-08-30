@@ -165,6 +165,7 @@ export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
   if (has[id] == null) {
     has[id] = true
+    // 默认为true
     if (!flushing) {
       queue.push(watcher)
     } else {

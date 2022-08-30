@@ -10,9 +10,11 @@ export function mountComponent(vm, el) {
    * 3. 在get触发后，dep通知watcher对象，使其监听列表里添加当前的dep 即dep.denpend() -> Dep.target.addDep(this)
    * 4. watcher被通知后，得知自己有需要添加的对象，此时建立双向的依赖关系
    */
-  new Watcher(vm, () => {
+  const updateComponent = () => {
     vm._update(vm._render());
-  });
+  };
+  debugger
+  new Watcher(vm, updateComponent, true);
 }
 
 export function lifecycleMixin(Vue) {

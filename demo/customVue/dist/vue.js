@@ -268,11 +268,14 @@
    * 观察者
    */
   class Watcher {
-    constructor(vm, fn) {
+    constructor(vm, fn, renderWatcher) {
       this.id = id++;
+      this.vm = vm;
+      this.renderWatcher = renderWatcher;
       this.getter = fn;
       this.newDeps = [];
       this.newDepsId = new Set();
+      // watcher初渲染
       this.get();
     }
     addDep(dep) {
@@ -288,7 +291,7 @@
     get() {
       Dep.target = this;
       this.getter();
-      Dep.target = this;
+      Dep.target = null;
     }
     update() {
       this.get();
@@ -366,9 +369,11 @@
      * 3. 在get触发后，dep通知watcher对象，使其监听列表里添加当前的dep 即dep.denpend() -> Dep.target.addDep(this)
      * 4. watcher被通知后，得知自己有需要添加的对象，此时建立双向的依赖关系
      */
-    new Watcher(vm, () => {
+    const updateComponent = () => {
       vm._update(vm._render());
-    });
+    };
+    debugger
+    new Watcher(vm, updateComponent, true);
   }
 
   function lifecycleMixin(Vue) {
@@ -465,6 +470,7 @@
    * @param {*} val 键值
    */
   function defineReactive(obj, key, value) {
+    // 对每一个属性都做增加一个dep，用作收集依赖的watcher
     const dep = new Dep();
     // 对所有对象都进行属性劫持
     observe(value);
