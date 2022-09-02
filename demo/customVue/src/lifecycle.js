@@ -13,7 +13,6 @@ export function mountComponent(vm, el) {
   const updateComponent = () => {
     vm._update(vm._render());
   };
-  debugger
   new Watcher(vm, updateComponent, true);
 }
 

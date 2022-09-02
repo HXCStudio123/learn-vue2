@@ -31,6 +31,17 @@ export default class Watcher {
     Dep.target = null;
   }
   update() {
-    this.get();
+    // this.get();
+    queueWatcher(this)
   }
+}
+
+
+let queue = []
+/**
+ * 存放watcher更新队列，如果watcher需要更新，那么收集当前需要更新的watcher
+ * @param {Watcher} watcher 
+ */
+function queueWatcher(watcher) {
+  
 }
