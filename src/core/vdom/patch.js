@@ -206,8 +206,6 @@ export function createPatchFunction(backend) {
           // 标签属性设置、类名设置、dom 标签节点属性设置，如 input.value 、事件绑定、style 设置、transition 组件的 enter 设置
           // vue 的事件绑定是用 addEventListener，直接给目标节点绑定事件，与 preact 一致；
           // 而 react 是使用事件合成机制，通过事件冒泡（事件委托）来实现，事件绑定在 document 上，通过冒泡方式来触发对应节点的事件
-          console.log("结果", vnode);
-          // debugger;
           invokeCreateHooks(vnode, insertedVnodeQueue);
         }
         insert(parentElm, vnode.elm, refElm);
@@ -336,7 +334,6 @@ export function createPatchFunction(backend) {
   }
 
   function invokeCreateHooks(vnode, insertedVnodeQueue) {
-    console.log('cbs', cbs)
     for (let i = 0; i < cbs.create.length; ++i) {
       cbs.create[i](emptyNode, vnode);
     }

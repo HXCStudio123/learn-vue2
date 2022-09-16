@@ -25,7 +25,6 @@ import Vue from "../instance";
  * value into the final value.
  */
 const strats = config.optionMergeStrategies;
-console.log("strats策略列表", config.optionMergeStrategies);
 
 /**
  * Options with restrictions
@@ -101,7 +100,6 @@ export function mergeDataOrFn(
   } else {
     return function mergedInstanceDataFn() {
       // instance merge
-      console.log('实例合并', childVal)
       const instanceData = typeof childVal === 'function'
         ? childVal.call(vm, vm)
         : childVal
@@ -343,7 +341,6 @@ let options = {
   props: [{ a: Number }],
 };
 normalizeProps(options, obj);
-console.log('hebing ""', options);
 /**
  * Normalize all injections into Object-based format
  */
@@ -405,7 +402,6 @@ export function mergeOptions(
   child: Object,
   vm?: Component
 ): Object {
-  console.log("父，子", parent, child);
   if (process.env.NODE_ENV !== "production") {
     checkComponents(child);
   }

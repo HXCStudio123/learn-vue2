@@ -30,7 +30,6 @@ export function setActiveInstance(vm: Component) {
 }
 
 export function initLifecycle(vm: Component) {
-  console.log("初始化生命周期");
   const options = vm.$options;
 
   // locate first non-abstract parent，获取 options.parent，找到 parent.$options.abstract 为 false 的 parent，将当前的 vm 塞入 parent.$children
@@ -360,7 +359,6 @@ export function callHook(vm: Component, hook: string) {
   pushTarget();
   const handlers = vm.$options[hook];
   const info = `${hook} hook`;
-  console.log("执行handlers：", handlers, vm.$options);
   if (handlers) {
     for (let i = 0, j = handlers.length; i < j; i++) {
       // 对生命周期添加错误事件拦截

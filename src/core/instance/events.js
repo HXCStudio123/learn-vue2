@@ -16,7 +16,6 @@ export function initEvents (vm: Component) {
   // init parent attached events
   // 父元素的_parentListeners的v-on的事件
   const listeners = vm.$options._parentListeners
-  console.log('listeners', listeners)
   // 有父元素的事件
   if (listeners) {
     // 为当前的vm对象添加父元素的listener
@@ -143,7 +142,6 @@ export function eventsMixin (Vue: Class<Component>) {
       }
     }
     let cbs = vm._events[event]
-    console.log('-------', cbs)
     if (cbs) {
       cbs = cbs.length > 1 ? toArray(cbs) : cbs
       const args = toArray(arguments, 1)

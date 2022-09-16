@@ -43,7 +43,6 @@ export function initMixin(Vue: Class<Component>) {
       const globalOptions = resolveConstructorOptions(vm.constructor);
       // 在合并参数的阶段，根据不同的合并策略来进行合并操作
       vm.$options = mergeOptions(globalOptions, options || {}, vm);
-      console.log("合并后的的options", vm.$options.parent);
     }
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== "production") {
@@ -128,7 +127,6 @@ export function resolveConstructorOptions(Ctor: Class<Component>) {
    * }
    */
   // Ctor 实际上是Vue实例的构造函数
-  console.log("Ctor: ", Ctor, Ctor.options);
   let options = Ctor.options;
   // Ctor.super 是在Vue.extend中出现过
   if (Ctor.super) {

@@ -120,7 +120,6 @@ export function renderMixin(Vue: Class<Component>) {
       currentRenderingInstance = vm;
       // 通过执行render函数获取虚拟dom节点
       vnode = render.call(vm._renderProxy, vm.$createElement);
-      console.log(render, "v--", vnode);
     } catch (e) {
       handleError(e, vm, `render`);
       // return error render result,

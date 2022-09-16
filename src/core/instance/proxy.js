@@ -59,7 +59,6 @@ if (process.env.NODE_ENV !== 'production') {
       // 判定当前的使用的全局类型是否，是使用_定义的，并且不在$data中定义的
       const isAllowed = allowedGlobals(key) ||
         (typeof key === 'string' && key.charAt(0) === '_' && !(key in target.$data))
-        console.log('key：：：', key, target)
       if (!has && !isAllowed) {
         // 检查当前的key是否在$data中
         if (key in target.$data) warnReservedPrefix(target, key)
@@ -83,7 +82,6 @@ if (process.env.NODE_ENV !== 'production') {
   initProxy = function initProxy (vm) {
     
     if (hasProxy) {
-      console.log('进入', hasProxy)
       // determine which proxy handler to use
       // 确定handle使用搞那个handler
       const options = vm.$options
