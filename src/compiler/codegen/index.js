@@ -143,7 +143,14 @@ function genOnce (el: ASTElement, state: CodegenState): string {
     return genStatic(el, state)
   }
 }
-
+/**
+ * 处理if
+ * @param {*} el 
+ * @param {*} state 
+ * @param {*} altGen 
+ * @param {*} altEmpty 
+ * @returns 
+ */
 export function genIf (
   el: any,
   state: CodegenState,
@@ -176,6 +183,26 @@ function genIfConditions (
   }
 
   // v-if with v-once should generate code like (a)?_m(0):_m(1)
+  /**
+   * (function anonymous() {
+      with (this) {
+        return _c(
+          'div',
+          { attrs: { id: 'app' } },
+          _l(2, function (i) {
+            return msg
+              ? _c('div', { key: i }, [
+                  _c('li', { on: { click: test } }, [_v(_s(i))]),
+                ])
+              : _e()
+          }),
+          0
+        )
+      }
+    })
+   * @param {*} el 
+   * @returns 
+   */
   function genTernaryExp (el) {
     return altGen
       ? altGen(el, state)
@@ -184,7 +211,15 @@ function genIfConditions (
         : genElement(el, state)
   }
 }
-
+/**
+ * 处理v-for指令
+ * 校验key
+ * @param {*} el 
+ * @param {*} state 
+ * @param {*} altGen 
+ * @param {*} altHelper 
+ * @returns 
+ */
 export function genFor (
   el: any,
   state: CodegenState,
@@ -307,7 +342,13 @@ export function genData (el: ASTElement, state: CodegenState): string {
   }
   return data
 }
-
+/**
+ * 处理指令
+ * v-show  v-bind v-model ....
+ * @param {*} el 
+ * @param {*} state 
+ * @returns 
+ */
 function genDirectives (el: ASTElement, state: CodegenState): string | void {
   const dirs = el.directives
   if (!dirs) return
