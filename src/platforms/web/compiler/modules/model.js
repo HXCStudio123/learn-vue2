@@ -24,12 +24,14 @@ import {
 } from 'compiler/parser/index'
 
 function preTransformNode (el: ASTElement, options: CompilerOptions) {
+  // 对input标签特殊处理
   if (el.tag === 'input') {
     const map = el.attrsMap
+    // 动态绑定数据
     if (!map['v-model']) {
       return
     }
-
+    
     let typeBinding
     if (map[':type'] || map['v-bind:type']) {
       typeBinding = getBindingAttr(el, 'type')

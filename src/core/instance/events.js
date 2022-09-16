@@ -143,6 +143,7 @@ export function eventsMixin (Vue: Class<Component>) {
       }
     }
     let cbs = vm._events[event]
+    console.log('-------', cbs)
     if (cbs) {
       cbs = cbs.length > 1 ? toArray(cbs) : cbs
       const args = toArray(arguments, 1)

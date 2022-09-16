@@ -11,6 +11,7 @@ import { currentFlushTimestamp } from 'core/observer/scheduler'
 // the whole point is ensuring the v-model callback gets called before
 // user-attached handlers.
 function normalizeEvents (on) {
+  console.log('执行on')
   /* istanbul ignore if */
   if (isDef(on[RANGE_TOKEN])) {
     // IE input[type=range] only supports `change` event
@@ -110,6 +111,7 @@ function updateDOMListeners (oldVnode: VNodeWithData, vnode: VNodeWithData) {
   const oldOn = oldVnode.data.on || {}
   target = vnode.elm
   normalizeEvents(on)
+  debugger
   updateListeners(on, oldOn, add, remove, createOnceHandler, vnode.context)
   target = undefined
 }

@@ -80,6 +80,7 @@ export function createASTElement(
 
 /**
  * Convert HTML string to AST.
+ * 转成ast语法树，对template进行解析
  */
 export function parse(
   template: string,

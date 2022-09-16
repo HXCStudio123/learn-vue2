@@ -174,12 +174,11 @@ export function createPatchFunction(backend) {
           );
         }
       }
-
+      // 此处只是创建节点，并未写入属性
       vnode.elm = vnode.ns
         ? nodeOps.createElementNS(vnode.ns, tag)
         : nodeOps.createElement(tag, vnode);
       setScope(vnode); // 设置 .vue 问卷中样式 scoped 的标签属性
-      console.log(vnode, vnode.elm);
       /* istanbul ignore if */
       if (__WEEX__) {
         // in Weex, the default insertion order is parent-first.
@@ -207,9 +206,9 @@ export function createPatchFunction(backend) {
           // 标签属性设置、类名设置、dom 标签节点属性设置，如 input.value 、事件绑定、style 设置、transition 组件的 enter 设置
           // vue 的事件绑定是用 addEventListener，直接给目标节点绑定事件，与 preact 一致；
           // 而 react 是使用事件合成机制，通过事件冒泡（事件委托）来实现，事件绑定在 document 上，通过冒泡方式来触发对应节点的事件
-          invokeCreateHooks(vnode, insertedVnodeQueue);
           console.log("结果", vnode);
-          debugger;
+          // debugger;
+          invokeCreateHooks(vnode, insertedVnodeQueue);
         }
         insert(parentElm, vnode.elm, refElm);
       }
@@ -337,6 +336,7 @@ export function createPatchFunction(backend) {
   }
 
   function invokeCreateHooks(vnode, insertedVnodeQueue) {
+    console.log('cbs', cbs)
     for (let i = 0; i < cbs.create.length; ++i) {
       cbs.create[i](emptyNode, vnode);
     }

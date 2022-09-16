@@ -110,7 +110,7 @@ export function parseHTML(html, options) {
           continue;
         }
 
-        // End tag: 判断是否是关不=
+        // End tag: 判断是否是关闭标签
         /**
          * 有两种情况
          * 1. 表示当前处于标签起始位置并通过起始位置处理当前标签
