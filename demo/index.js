@@ -1,5 +1,5 @@
 import Vue from 'vue'
-
+console.log(1)
 new Vue({
   el: "#app",
   // data: {
@@ -9,17 +9,18 @@ new Vue({
   // },
   data() {
     return {
+      msg: 1,
       firstName: "John",
       lastName: "Joe",
       reverseFirstName: "John".split("").reverse().join(""),
     };
   },
   components: {
-    test: {
+    custom: {
       data: {
         firstName: "11",
       },
-      template: "<div  >111</div>",
+      template: "<div>111</div>",
     },
   },
   computed: {
@@ -42,5 +43,8 @@ new Vue({
     reset() {
       this.firstName = "John";
     },
+    test() {
+      console.log('11')
+    }
   },
 });

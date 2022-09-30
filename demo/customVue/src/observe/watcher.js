@@ -31,17 +31,34 @@ export default class Watcher {
     Dep.target = null;
   }
   update() {
-    // this.get();
-    queueWatcher(this)
+    queueWatcher(this);
+  }
+  run() {
+    this.get()
   }
 }
 
+let queue = [];
+let watcherIds = new Set();
+let waiting = false;
 
-let queue = []
+function flushSchedulerQueue() {
+  for(let watcher of queue) {
+    watcher.run()
+  }
+}
+
 /**
  * 存放watcher更新队列，如果watcher需要更新，那么收集当前需要更新的watcher
- * @param {Watcher} watcher 
+ * @param {Watcher} watcher
  */
 function queueWatcher(watcher) {
-  
+  if(!waiting) {
+    waiting = true
+  }
+  // 没有重复watcher
+  if (!watcherIds.has(watcher.id)) {
+    queue.push(watcher)
+    watcherIds.add(watcher.id)
+  }
 }
