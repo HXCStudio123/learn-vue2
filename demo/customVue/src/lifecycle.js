@@ -13,7 +13,7 @@ export function mountComponent(vm, el) {
   const updateComponent = () => {
     vm._update(vm._render());
   };
-  new Watcher(vm, updateComponent, true);
+  new Watcher(vm, updateComponent, null, true);
 }
 
 export function lifecycleMixin(Vue) {
@@ -22,7 +22,7 @@ export function lifecycleMixin(Vue) {
     const vm = this;
     // 新的dom元素赋值给vm，这样可以手动修改当前页面的DOM元素
     vm.$el = patch(vm.$el, vnode);
-    console.log(vm.$el);
+    // console.log(vm.$el);
   };
 }
 

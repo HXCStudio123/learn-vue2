@@ -5,15 +5,20 @@ let id = 0;
  * 观察者
  */
 export default class Watcher {
-  constructor(vm, fn, renderWatcher) {
+  constructor(vm, fn, options, renderWatcher) {
     this.id = id++;
     this.vm = vm;
     this.renderWatcher = renderWatcher;
     this.getter = fn;
     this.newDeps = [];
     this.newDepsId = new Set();
+    // 懒更新 computed
+    if (options) {
+      this.lazy = !!options.lazy;
+    }
+    this.dirty = !!this.lazy;
     // watcher初渲染
-    this.get();
+    this.lazy ? undefined : this.get();
   }
   addDep(dep) {
     // 去重
@@ -25,10 +30,17 @@ export default class Watcher {
       dep.addSub(this);
     }
   }
+  excutate() {
+    this.dirty = false;
+    this.value = this.get();
+  }
   get() {
-    Dep.target = this;
-    this.getter();
-    Dep.target = null;
+    // Dep.target = this;
+    pushStack(this);
+    this.value = this.getter.call(this.vm);
+    popStack();
+    // Dep.target = null;
+    return this.value;
   }
   update() {
     queueWatcher(this);
@@ -37,6 +49,16 @@ export default class Watcher {
   run() {
     this.get();
   }
+}
+Dep.target = null;
+let stack = [];
+function pushStack(watcher) {
+  stack.push(watcher);
+  Dep.target = watcher;
+}
+function popStack() {
+  stack.pop();
+  Dep.target = stack[stack.length - 1];
 }
 
 let queue = [];

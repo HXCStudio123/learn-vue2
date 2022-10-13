@@ -97,7 +97,6 @@
     let currentParent = null;
     // 匹配开始结束的栈
     let stack = [];
-
     // 处理一个解析一个，直至最后全部处理完成
     while (html) {
       // 获取每一个标签的开始
@@ -107,7 +106,7 @@
          * 有两种情况
          * 1. 表示当前处于标签起始位置并通过起始位置处理当前标签
          * 2. 是关闭标签</div>
-         * eg: <div id="app"></div>
+         * eg: <div id="app" v-bind="ssss"> <span></span></div>
          * textEnd: 0; 通过处理当前 <div id="app"> ‘<’ 和 ‘>’中间的部分
          */
         // 关闭标签的处理，直接除掉
@@ -268,15 +267,20 @@
    * 观察者
    */
   class Watcher {
-    constructor(vm, fn, renderWatcher) {
+    constructor(vm, fn, options, renderWatcher) {
       this.id = id++;
       this.vm = vm;
       this.renderWatcher = renderWatcher;
       this.getter = fn;
       this.newDeps = [];
       this.newDepsId = new Set();
+      // 懒更新 computed
+      if (options) {
+        this.lazy = !!options.lazy;
+      }
+      this.dirty = !!this.lazy;
       // watcher初渲染
-      this.get();
+      this.lazy ? undefined : this.get();
     }
     addDep(dep) {
       // 去重
@@ -288,13 +292,117 @@
         dep.addSub(this);
       }
     }
+    excutate() {
+      this.dirty = false;
+      this.value = this.get();
+    }
     get() {
-      Dep.target = this;
-      this.getter();
-      Dep.target = null;
+      // Dep.target = this;
+      pushStack(this);
+      this.value = this.getter.call(this.vm);
+      popStack();
+      // Dep.target = null;
+      return this.value;
     }
     update() {
+      queueWatcher(this);
+      // this.get();
+    }
+    run() {
       this.get();
+    }
+  }
+  Dep.target = null;
+  let stack = [];
+  function pushStack(watcher) {
+    stack.push(watcher);
+    Dep.target = watcher;
+  }
+  function popStack() {
+    stack.pop();
+    Dep.target = stack[stack.length - 1];
+  }
+
+  let queue = [];
+  let watcherIds = new Set();
+  let pending = false;
+
+  /**
+   * 批处理watcher更新
+   */
+  function flushSchedulerQueue() {
+    for (let watcher of queue) {
+      watcher.run();
+    }
+    // 执行后状态初始化
+    pending = false;
+    queue = [];
+    watcherIds = new Set();
+  }
+
+  /**
+   * 存放watcher更新队列，如果watcher需要更新，那么收集当前需要更新的watcher
+   * @param {Watcher} watcher
+   */
+  function queueWatcher(watcher) {
+    // 查看是否有重复的watcher
+    if (!watcherIds.has(watcher.id)) {
+      // 添加进队列等待统一处理
+      queue.push(watcher);
+      watcherIds.add(watcher.id);
+    }
+    if (!pending) {
+      pending = true;
+      nextTick(flushSchedulerQueue);
+    }
+  }
+
+  // 采用优雅降级的方式
+  let callbacks = [];
+  let waiting = false;
+  let timeFn = null;
+
+  if (Promise) {
+    timeFn = () => {
+      Promise.resolve().then(flushCallbacks);
+    };
+  } else if (MutationObserver) {
+    let counter = 1;
+    const observer = new MutationObserver(flushCallbacks);
+    const textNode = document.createTextNode(String(counter));
+    observer.observe(textNode, {
+      characterData: true,
+    });
+    timeFn = () => {
+      counter = (counter + 1) % 2;
+      textNode.data = String(counter);
+    };
+  } else if (setTimeout) {
+    timeFn = () => {
+      setTimeout(flushCallbacks, 0);
+    };
+  } else if (setInterval) {
+    timeFn = () => {
+      setInterval(flushCallbacks);
+    };
+  }
+
+  function flushCallbacks() {
+    callbacks.forEach((cb) => cb());
+    callbacks = [];
+    waiting = false;
+  }
+
+  /**
+   * 确认自定义nextTick和内部渲染的执行顺序，维护了一个执行异步的队列
+   * @param {*} cb 回调函数，可能是执行的渲染get 也可能是用户自定义执行的函数
+   * @param {*} time
+   */
+  function nextTick(cb) {
+    callbacks.push(cb);
+    if (!waiting) {
+      waiting = true;
+      timeFn();
     }
   }
 
@@ -372,8 +480,7 @@
     const updateComponent = () => {
       vm._update(vm._render());
     };
-    debugger
-    new Watcher(vm, updateComponent, true);
+    new Watcher(vm, updateComponent, null, true);
   }
 
   function lifecycleMixin(Vue) {
@@ -382,7 +489,7 @@
       const vm = this;
       // 新的dom元素赋值给vm，这样可以手动修改当前页面的DOM元素
       vm.$el = patch(vm.$el, vnode);
-      console.log(vm.$el);
+      // console.log(vm.$el);
     };
   }
 
@@ -478,7 +585,7 @@
       configurable: true,
       enumerable: true,
       get() {
-        console.log("get", value);
+        // console.log("get", value);
         if (Dep.target) {
           dep.depend();
         }
@@ -489,7 +596,7 @@
         if (value === newValue) {
           return;
         }
-        console.log("set", newValue);
+        // console.log("set", newValue);
         observe(newValue);
         value = newValue;
         dep.notify();
@@ -535,8 +642,8 @@
     vm._data = data;
     // 响应式实现，对data进行劫持
     observe(data);
-    Object.keys(data).forEach(key => {
-      proxy(vm, '_data', key);
+    Object.keys(data).forEach((key) => {
+      proxy(vm, "_data", key);
     });
   }
 
@@ -546,6 +653,37 @@
     if (opts.data) {
       initData(vm);
     }
+    if (opts.computed) {
+      initComputed(vm, opts.computed);
+    }
+  }
+
+  function initComputed(vm, computed) {
+    let watchers = vm._computedWatchers = [];
+    for (let key in computed) {
+      const userDef = computed[key];
+      const getter = typeof userDef === "function" ? userDef : userDef.get;
+      watchers[key] = new Watcher(vm, getter, { lazy: true }, false);
+      defineComputed(vm, key, userDef);
+    }
+  }
+
+  function defineComputed(target, key, userDef) {
+    const setter = typeof userDef === "function" ? () => {} : userDef.set;
+    Object.defineProperty(target, key, {
+      get: createComputedGetter(target._computedWatchers[key]),
+      set: setter,
+    });
+  }
+
+  function createComputedGetter(watcher) {
+    return function () {
+      if (watcher.dirty) {
+        // 执行计算
+        watcher.excutate();
+      }
+      return watcher.value
+    };
   }
 
   function initMixin(Vue) {
@@ -637,6 +775,8 @@
   initMixin(Vue);
   lifecycleMixin(Vue);
   renderMixin(Vue);
+
+  Vue.prototype.$nextTick = nextTick;
 
   return Vue;
 

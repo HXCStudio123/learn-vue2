@@ -48,7 +48,7 @@ export function defineReactive(obj, key, value) {
     configurable: true,
     enumerable: true,
     get() {
-      console.log("get", value);
+      // console.log("get", value);
       if (Dep.target) {
         dep.depend();
       }
@@ -59,7 +59,7 @@ export function defineReactive(obj, key, value) {
       if (value === newValue) {
         return;
       }
-      console.log("set", newValue);
+      // console.log("set", newValue);
       observe(newValue);
       value = newValue;
       dep.notify();

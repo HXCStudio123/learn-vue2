@@ -7,11 +7,11 @@
     <title>Document</title>
   </head>
   <body>
-    <!-- <div id="app">{{fullname}} {{fullname}} {{fullname}}</div> -->
-    <div id="app">
+    <div id="app">{{fullname}} {{fullname}} {{fullname}}</div>
+    <!-- <div id="app">
       text
       <h1>{{msg}}hello{{msg}}hello</h1>
-    </div>
+    </div> -->
     <!-- <scirpt src="../dist/vue.js"></scirpt> -->
     <script src="./dist/vue.js"></script>
     <script>
@@ -69,21 +69,25 @@
        * 因此Vue内部也暴露了一个统一的nextTick方法
        *
        * */
-      vm.msg = "22"; // 变换值之后不会立即渲染页面，渲染页面的操作是异步的
-      console.log(document.getElementById("app").innerHTML);
-      vm.$nextTick(() => {
-        console.log(document.getElementById("app").innerHTML);
-      });
-      vm.msg = "33";
-      vm.$nextTick(() => {
-        console.log(document.getElementById("app").innerHTML);
-      });
-      vm.msg = "44";
-      vm.$nextTick(() => {
-        console.log(document.getElementById("app").innerHTML);
-      });
-      // 此时nextTick中有一个渲染和是哪个自定义的。
-      // console.log(vm);
+      // vm.msg = "22"; // 变换值之后不会立即渲染页面，渲染页面的操作是异步的
+      // console.log(document.getElementById("app").innerHTML);
+      // vm.$nextTick(() => {
+      //   console.log(document.getElementById("app").innerHTML);
+      // });
+      // vm.msg = "33";
+      // vm.$nextTick(() => {
+      //   console.log(document.getElementById("app").innerHTML);
+      // });
+      // vm.msg = "44";
+      // vm.$nextTick(() => {
+      //   console.log(document.getElementById("app").innerHTML);
+      // });
+      // 此时nextTick中有一个渲染和三个自定义的。
+      /**
+       * 当前代码节点：变更对应计算属性引用的值，页面不发生变化，因为firstname只被computed watcher监听到，并未做赋值动作
+       * */
+      vm.firstName = "new hou";
+      console.log('xin', vm.fullname) // 还是houxinchao 并没有变成 new houxinchao
     </script>
   </body>
 </html>

@@ -21,7 +21,6 @@ export function parseHTML(html) {
   let currentParent = null;
   // 匹配开始结束的栈
   let stack = [];
-
   // 处理一个解析一个，直至最后全部处理完成
   while (html) {
     // 获取每一个标签的开始
@@ -33,7 +32,7 @@ export function parseHTML(html) {
        * 2. 是关闭标签</div>
        * eg: <div id="app" v-bind="ssss"> <span></span></div>
        * textEnd: 0; 通过处理当前 <div id="app"> ‘<’ 和 ‘>’中间的部分
-    */
+       */
       // 关闭标签的处理，直接除掉
       const endTagMatch = html.match(endTag);
       if (endTagMatch) {
