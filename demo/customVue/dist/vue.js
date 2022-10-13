@@ -234,6 +234,62 @@
     return render;
   }
 
+  // 采用优雅降级的方式
+  let callbacks = [];
+  let waiting = false;
+  let timeFn = null;
+
+  if (Promise) {
+    timeFn = () => {
+      Promise.resolve().then(flushCallbacks);
+    };
+  } else if (MutationObserver) {
+    let counter = 1;
+    const observer = new MutationObserver(flushCallbacks);
+    const textNode = document.createTextNode(String(counter));
+    observer.observe(textNode, {
+      characterData: true,
+    });
+    timeFn = () => {
+      counter = (counter + 1) % 2;
+      textNode.data = String(counter);
+    };
+  } else if (setTimeout) {
+    timeFn = () => {
+      setTimeout(flushCallbacks, 0);
+    };
+  } else if (setInterval) {
+    timeFn = () => {
+      setInterval(flushCallbacks);
+    };
+  }
+
+  function flushCallbacks() {
+    callbacks.forEach((cb) => cb());
+    callbacks = [];
+    waiting = false;
+  }
+
+  /**
+   * 确认自定义nextTick和内部渲染的执行顺序，维护了一个执行异步的队列
+   * @param {*} cb 回调函数，可能是执行的渲染get 也可能是用户自定义执行的函数
+   * @param {*} time
+   */
+  function nextTick(cb) {
+    callbacks.push(cb);
+    if (!waiting) {
+      waiting = true;
+      timeFn();
+    }
+  }
+
+  const def = function (obj, key, value) {
+    Object.defineProperty(obj, key, {
+      enumerable: false,
+      value,
+    });
+  };
+
   let id$1 = 0;
   /**
    * Dep依赖，其实也是被观察者
@@ -368,55 +424,6 @@
     }
   }
 
-  // 采用优雅降级的方式
-  let callbacks = [];
-  let waiting = false;
-  let timeFn = null;
-
-  if (Promise) {
-    timeFn = () => {
-      Promise.resolve().then(flushCallbacks);
-    };
-  } else if (MutationObserver) {
-    let counter = 1;
-    const observer = new MutationObserver(flushCallbacks);
-    const textNode = document.createTextNode(String(counter));
-    observer.observe(textNode, {
-      characterData: true,
-    });
-    timeFn = () => {
-      counter = (counter + 1) % 2;
-      textNode.data = String(counter);
-    };
-  } else if (setTimeout) {
-    timeFn = () => {
-      setTimeout(flushCallbacks, 0);
-    };
-  } else if (setInterval) {
-    timeFn = () => {
-      setInterval(flushCallbacks);
-    };
-  }
-
-  function flushCallbacks() {
-    callbacks.forEach((cb) => cb());
-    callbacks = [];
-    waiting = false;
-  }
-
-  /**
-   * 确认自定义nextTick和内部渲染的执行顺序，维护了一个执行异步的队列
-   * @param {*} cb 回调函数，可能是执行的渲染get 也可能是用户自定义执行的函数
-   * @param {*} time
-   */
-  function nextTick(cb) {
-    callbacks.push(cb);
-    if (!waiting) {
-      waiting = true;
-      timeFn();
-    }
-  }
-
   /**
    * 虚拟DOM转真实DOM
    * @param {*} oldVnode
@@ -503,13 +510,6 @@
       // console.log(vm.$el);
     };
   }
-
-  const def = function (obj, key, value) {
-    Object.defineProperty(obj, key, {
-      enumerable: false,
-      value,
-    });
-  };
 
   const oldArrayProto = Array.prototype;
 
@@ -743,6 +743,11 @@
     };
   }
 
+  function initGlobal(Vue) {
+    Vue.prototype.$nextTick = nextTick;
+    Vue.prototype.$watch = function () {};
+  }
+
   function createElement(context, tag, key, data, children) {
     return new VNode(context, tag, 1, key, data, children);
   }
@@ -786,12 +791,10 @@
   function Vue(options) {
     this._init(options);
   }
-
+  initGlobal(Vue);
   initMixin(Vue);
   lifecycleMixin(Vue);
   renderMixin(Vue);
-
-  Vue.prototype.$nextTick = nextTick;
 
   return Vue;
 
