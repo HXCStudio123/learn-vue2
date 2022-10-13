@@ -32,20 +32,28 @@ export default class Watcher {
   }
   update() {
     queueWatcher(this);
+    // this.get();
   }
   run() {
-    this.get()
+    this.get();
   }
 }
 
 let queue = [];
 let watcherIds = new Set();
-let waiting = false;
+let pending = false;
 
+/**
+ * 批处理watcher更新
+ */
 function flushSchedulerQueue() {
-  for(let watcher of queue) {
-    watcher.run()
+  for (let watcher of queue) {
+    watcher.run();
   }
+  // 执行后状态初始化
+  pending = false;
+  queue = [];
+  watcherIds = new Set();
 }
 
 /**
@@ -53,12 +61,63 @@ function flushSchedulerQueue() {
  * @param {Watcher} watcher
  */
 function queueWatcher(watcher) {
-  if(!waiting) {
-    waiting = true
-  }
-  // 没有重复watcher
+  // 查看是否有重复的watcher
   if (!watcherIds.has(watcher.id)) {
-    queue.push(watcher)
-    watcherIds.add(watcher.id)
+    // 添加进队列等待统一处理
+    queue.push(watcher);
+    watcherIds.add(watcher.id);
+  }
+  if (!pending) {
+    pending = true;
+    nextTick(flushSchedulerQueue);
+  }
+}
+
+// 采用优雅降级的方式
+let callbacks = [];
+let waiting = false;
+let timeFn = null;
+
+if (Promise) {
+  timeFn = () => {
+    Promise.resolve().then(flushCallbacks);
+  };
+} else if (MutationObserver) {
+  let counter = 1;
+  const observer = new MutationObserver(flushCallbacks);
+  const textNode = document.createTextNode(String(counter));
+  observer.observe(textNode, {
+    characterData: true,
+  });
+  timeFn = () => {
+    counter = (counter + 1) % 2;
+    textNode.data = String(counter);
+  };
+} else if (setTimeout) {
+  timeFn = () => {
+    setTimeout(flushCallbacks, 0);
+  };
+} else if (setInterval) {
+  timeFn = () => {
+    setInterval(flushCallbacks);
+  };
+}
+
+function flushCallbacks() {
+  callbacks.forEach((cb) => cb());
+  callbacks = [];
+  waiting = false;
+}
+
+/**
+ * 确认自定义nextTick和内部渲染的执行顺序，维护了一个执行异步的队列
+ * @param {*} cb 回调函数，可能是执行的渲染get 也可能是用户自定义执行的函数
+ * @param {*} time
+ */
+export function nextTick(cb) {
+  callbacks.push(cb);
+  if (!waiting) {
+    waiting = true;
+    timeFn();
   }
 }

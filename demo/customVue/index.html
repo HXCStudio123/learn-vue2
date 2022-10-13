@@ -7,6 +7,7 @@
     <title>Document</title>
   </head>
   <body>
+    <!-- <div id="app">{{fullname}} {{fullname}} {{fullname}}</div> -->
     <div id="app">
       text
       <h1>{{msg}}hello{{msg}}hello</h1>
@@ -17,11 +18,19 @@
       const vm = new Vue({
         el: "#app",
         data: {
-          msg: 'world',
+          msg: "world",
+          firstName: "hou",
+          lastName: "xinchao",
           arr: [{ name: 1 }],
           obj: {
             name: "1",
             age: 2,
+          },
+        },
+        computed: {
+          fullname() {
+            console.log("run");
+            return this.firstName + this.lastName;
           },
         },
       });
@@ -42,14 +51,39 @@
       // 综上所述，在渲染的基础上，就需要添加 《双向绑定》 和 《异步更新》
       // setTimeout(()=>{
       //   vm.msg = '--测试--'
-      //   // vm._update(vm._render())
-      // }, 1000)
+      //   vm._update(vm._render())
+      // }, 0)
 
       // 解决问题一：在原来的基础上，添加双向绑定逻辑
       // 1. 在初始化时，将 要渲染的视图 和（当前视图中使用的数据）关联起来
       // 2. 数据更改后，通知（使用该数据的所有视图）进行重新渲染
       // 其中 数据其实就是dep（依赖），视图就是watcher（观察者）
-      console.log(vm);
+      // setTimeout(()=>{
+      //   vm.msg = '--测试--'
+      // }, 0)
+
+      /**
+       * nextTick 异步队列处理
+       * 变换值之后不会立即渲染页面，渲染页面的操作是异步的
+       * 但是用户用的异步函数可能不同，导致获取真实dom的顺序发生变化
+       * 因此Vue内部也暴露了一个统一的nextTick方法
+       *
+       * */
+      vm.msg = "22"; // 变换值之后不会立即渲染页面，渲染页面的操作是异步的
+      console.log(document.getElementById("app").innerHTML);
+      vm.$nextTick(() => {
+        console.log(document.getElementById("app").innerHTML);
+      });
+      vm.msg = "33";
+      vm.$nextTick(() => {
+        console.log(document.getElementById("app").innerHTML);
+      });
+      vm.msg = "44";
+      vm.$nextTick(() => {
+        console.log(document.getElementById("app").innerHTML);
+      });
+      // 此时nextTick中有一个渲染和是哪个自定义的。
+      // console.log(vm);
     </script>
   </body>
 </html>
