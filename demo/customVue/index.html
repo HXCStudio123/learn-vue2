@@ -7,11 +7,11 @@
     <title>Document</title>
   </head>
   <body>
-    <div id="app">{{fullname}} {{fullname}} {{fullname}}</div>
-    <!-- <div id="app">
+    <!-- <div id="app">{{fullname}} {{fullname}} {{fullname}}</div> -->
+    <div id="app">
       text
       <h1>{{msg}}hello{{msg}}hello</h1>
-    </div> -->
+    </div>
     <!-- <scirpt src="../dist/vue.js"></scirpt> -->
     <script src="./dist/vue.js"></script>
     <script>
@@ -33,44 +33,55 @@
             return this.firstName + this.lastName;
           },
         },
+        watch: {
+          firstName(newValue, oldValue) {
+            console.log("更改了", newValue, oldValue);
+          },
+        },
       });
-      vm.obj = { test: 33 };
-      // 1. 模板解析，把当前的模板解析成js，每次更新都是重新替换，（在1.0的时候没有采用虚拟DOm 因此性能极差）
-      // 2. 根据解析的语法生成虚拟DOM，通过比较虚拟DOM之间的差异去做更新页面
-      // 上次说错了Vue虚拟DOM其实是抄angular，react是最后添加的
-
-      // 明确了上面的问题之后就可以知道，其实我们需要做的就是做html->js之间 的一个转换。
-      // 通常做语法转换，是用的就是AST语法树,AST语法树其实就是一种抽象描述语言的树形结构，
-      // 树上的每一个节点都是对当前属性的形容。我们在日常生活中用到的ES6到ES5转换就是用的AST、还有做代码压缩等等。
-      // html -> ast -> js语法 -> 虚拟DOM
-      // render函数 （ast -> 虚拟DOM）
-      // 通过上一步拿到虚拟DOm后 可以根据虚拟DOm渲染成真实的DOM
-      // 注意：此时没有添加双向绑定
-      // 每次修改时可以手动触发vm._update(vm._render()) 进行页面渲染
-      // 这样就会存在问题：1.每次数据变更都要手动触发 2.如果变更多个数据，那么每次都需要重新渲染DOM 因此就需要异步队列处理DOM渲染问题
-      // 综上所述，在渲染的基础上，就需要添加 《双向绑定》 和 《异步更新》
-      // setTimeout(()=>{
-      //   vm.msg = '--测试--'
-      //   vm._update(vm._render())
-      // }, 0)
-
-      // 解决问题一：在原来的基础上，添加双向绑定逻辑
-      // 1. 在初始化时，将 要渲染的视图 和（当前视图中使用的数据）关联起来
-      // 2. 数据更改后，通知（使用该数据的所有视图）进行重新渲染
-      // 其中 数据其实就是dep（依赖），视图就是watcher（观察者）
-      // setTimeout(()=>{
-      //   vm.msg = '--测试--'
-      // }, 0)
-
       /**
-       * nextTick 异步队列处理
+       * 一、数据劫持
+       * 1. 模板解析，把当前的模板解析成js，每次更新都是重新替换，（在1.0的时候没有采用虚拟DOm 因此性能极差）
+       * 2. 根据解析的语法生成虚拟DOM，通过比较虚拟DOM之间的差异去做更新页面
+       * 上次说错了Vue虚拟DOM其实是抄angular，react是最后添加的
+       * */
+      // ------------------------分割线------------------------
+      /**
+       * 二、模板编译
+       * 明确了上面的问题之后就可以知道，其实我们需要做的就是做html->js之间 的一个转换。
+       * 通常做语法转换，是用的就是AST语法树,AST语法树其实就是一种抽象描述语言的树形结构，
+       * 树上的每一个节点都是对当前属性的形容。我们在日常生活中用到的ES6到ES5转换就是用的AST、还有做代码压缩等等。
+       * html -> ast -> js语法 -> 虚拟DOM
+       * render函数 （ast -> 虚拟DOM）
+       * 通过上一步拿到虚拟DOm后 可以根据虚拟DOm渲染成真实的DOM
+       * 注意：此时没有添加双向绑定
+       * 每次修改时可以手动触发vm._update(vm._render()) 进行页面渲染
+       * 这样就会存在问题：1.每次数据变更都要手动触发 2.如果变更多个数据，那么每次都需要重新渲染DOM 因此就需要异步队列处理DOM渲染问题
+       * 综上所述，在渲染的基础上，就需要添加 《双向绑定》 和 《异步更新》
+       * */
+      // setTimeoutm(()=>{
+      //   vm.msg = '--测试--'
+      //   vm._update(v._render())
+      // }, 0)
+      // ------------------------分割线------------------------
+      /**
+       * 三、双向绑定
+       * 解决问题一：在原来的基础上，添加双向绑定逻辑
+       * 1. 在初始化时，将 要渲染的视图 和（当前视图中使用的数据）关联起来
+       * 2. 数据更改后，通知（使用该数据的所有视图）进行重新渲染
+       * 其中 数据其实就是dep（依赖），视图就是watcher（观察者）
+       * */
+      // setTimeout(()=>{
+      //   vm.msg = '--测试--'
+      // }, 0)
+      // ------------------------分割线------------------------
+      /**
+       * 四、nextTick 异步队列处理
        * 变换值之后不会立即渲染页面，渲染页面的操作是异步的
        * 但是用户用的异步函数可能不同，导致获取真实dom的顺序发生变化
        * 因此Vue内部也暴露了一个统一的nextTick方法
-       *
        * */
       // vm.msg = "22"; // 变换值之后不会立即渲染页面，渲染页面的操作是异步的
-      // console.log(document.getElementById("app").innerHTML);
       // vm.$nextTick(() => {
       //   console.log(document.getElementById("app").innerHTML);
       // });
@@ -83,18 +94,28 @@
       //   console.log(document.getElementById("app").innerHTML);
       // });
       // 此时nextTick中有一个渲染和三个自定义的。
+      // ------------------------分割线------------------------
       /**
-       * 当前代码节点：变更对应计算属性引用的值，页面不发生变化，因为firstname只被computed watcher监听到
+       * 五、计算属性
+       * 计算属性原理也是使用watcher
+       * 1. 将computed中定义的对象使用defineProperty拦截，并作为get函数获取返回值
+       * 2. 在初始化计算属性watcher中添加dirty、lazy作为脏值监测机制，保证只有调用计算属性是才会获取值，并且后续如果没有变化值就始终取之前的缓存，不重新计算
+       * （注意：此时变更对应计算属性引用的值，页面不发生变化，因为firstname只被computed watcher监听到）
+       * vm.firstName = "new hou"; // 当处在当前状态时 还是houxinchao 并没有变成 new houxinchao
+       * 3. 在watcher依赖的值更新后，dirty状态转换，表示触发一次重新值计算，此时可以获取到最新内容了 new houxinchao
+       * （注意：fullname虽然更新了 但是页面内容并没有更新，因为当前的值值保存在计算属性的watcher中，渲染属性中没有对应的值dep）
+       * 4. 将计算属性watcher内的dep，加到当前的渲染watcher上，使dep属性变更时可以同步watcher视图更新，此时视图值也更新了
        * */
-      // vm.firstName = "new hou";
-      // console.log('xin', vm.fullname) // 还是houxinchao 并没有变成 new houxinchao
-
+      // vm.firstName = "new hou"
+      // console.log(vm.firstName)
+      // ------------------------分割线------------------------
       /**
-       * 在watcher中加入dirty逻辑后，可以获取到最新内容了 new houxinchao
-       * fullname虽然更新了 但是页面内容并没有更新，
-       * 将计算属性watcher内的dep，加到当前的渲染watcher上，使dep属性变更时可以同步watcher视图更新
-       * 此时视图值也更新了
+       * 六、watch
+       * 创建$watch，也是watch
        * */
+      vm.$watch("fisrtName", (newValue, oldValue) => {
+        console.log(newValue, oldValue);
+      });
     </script>
   </body>
 </html>
