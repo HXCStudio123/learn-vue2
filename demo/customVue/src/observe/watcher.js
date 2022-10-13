@@ -54,12 +54,17 @@ export default class Watcher {
   run() {
     this.get();
   }
+  // 给当前watcher添加dep依赖
+  depend() {
+    for(let dep of this.newDeps) {
+      dep.depend()
+    }
+  }
 }
 Dep.target = null;
 let stack = [];
 function pushStack(watcher) {
   stack.push(watcher);
-  debugger;
   Dep.target = watcher;
 }
 function popStack() {

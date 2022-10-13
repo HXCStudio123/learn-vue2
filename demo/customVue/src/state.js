@@ -1,3 +1,4 @@
+import Dep from "./observe/dep";
 import { observe } from "./observe/index";
 import Watcher from "./observe/watcher";
 /**
@@ -44,7 +45,7 @@ export function initState(vm) {
 }
 
 function initComputed(vm, computed) {
-  let watchers = vm._computedWatchers = [];
+  let watchers = (vm._computedWatchers = []);
   for (let key in computed) {
     const userDef = computed[key];
     const getter = typeof userDef === "function" ? userDef : userDef.get;
@@ -67,6 +68,10 @@ function createComputedGetter(watcher) {
       // 执行计算
       watcher.excutate();
     }
-    return watcher.value
+    if (Dep.target) {
+      // 将计算属性watcher内的dep，加到当前的渲染watcher上，使dep属性变更时可以同步watcher视图更新
+      watcher.depend();
+    }
+    return watcher.value;
   };
 }

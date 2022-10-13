@@ -86,9 +86,15 @@
       /**
        * 当前代码节点：变更对应计算属性引用的值，页面不发生变化，因为firstname只被computed watcher监听到
        * */
-      vm.firstName = "new hou";
-      console.log('xin', vm.fullname) // 还是houxinchao 并没有变成 new houxinchao
-      // 在watcher中加入dirty逻辑后，可以获取到最新内容了 new houxinchao
+      // vm.firstName = "new hou";
+      // console.log('xin', vm.fullname) // 还是houxinchao 并没有变成 new houxinchao
+
+      /**
+       * 在watcher中加入dirty逻辑后，可以获取到最新内容了 new houxinchao
+       * fullname虽然更新了 但是页面内容并没有更新，
+       * 将计算属性watcher内的dep，加到当前的渲染watcher上，使dep属性变更时可以同步watcher视图更新
+       * 此时视图值也更新了
+       * */
     </script>
   </body>
 </html>

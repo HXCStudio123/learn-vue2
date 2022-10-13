@@ -249,7 +249,7 @@
     addSub(sub) {
       this.subs.push(sub);
     }
-    // 给watcher添加当前数据绑定
+    // 给watcher添加当前数据绑定，在dep的依赖里加入watcher
     depend() {
       if (Dep.target) {
         Dep.target.addDep(this);
@@ -316,12 +316,17 @@
     run() {
       this.get();
     }
+    // 给当前watcher添加dep依赖
+    depend() {
+      for(let dep of this.newDeps) {
+        dep.depend();
+      }
+    }
   }
   Dep.target = null;
   let stack = [];
   function pushStack(watcher) {
     stack.push(watcher);
-    debugger;
     Dep.target = watcher;
   }
   function popStack() {
@@ -665,7 +670,7 @@
   }
 
   function initComputed(vm, computed) {
-    let watchers = vm._computedWatchers = [];
+    let watchers = (vm._computedWatchers = []);
     for (let key in computed) {
       const userDef = computed[key];
       const getter = typeof userDef === "function" ? userDef : userDef.get;
@@ -688,7 +693,11 @@
         // 执行计算
         watcher.excutate();
       }
-      return watcher.value
+      if (Dep.target) {
+        // 将计算属性watcher内的dep，加到当前的渲染watcher上，使dep属性变更时可以同步watcher视图更新
+        watcher.depend();
+      }
+      return watcher.value;
     };
   }
 

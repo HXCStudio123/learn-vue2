@@ -13,7 +13,7 @@ export default class Dep {
   addSub(sub) {
     this.subs.push(sub);
   }
-  // 给watcher添加当前数据绑定
+  // 给watcher添加当前数据绑定，在dep的依赖里加入watcher
   depend() {
     if (Dep.target) {
       Dep.target.addDep(this);
