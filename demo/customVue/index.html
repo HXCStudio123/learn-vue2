@@ -84,10 +84,11 @@
       // });
       // 此时nextTick中有一个渲染和三个自定义的。
       /**
-       * 当前代码节点：变更对应计算属性引用的值，页面不发生变化，因为firstname只被computed watcher监听到，并未做赋值动作
+       * 当前代码节点：变更对应计算属性引用的值，页面不发生变化，因为firstname只被computed watcher监听到
        * */
       vm.firstName = "new hou";
       console.log('xin', vm.fullname) // 还是houxinchao 并没有变成 new houxinchao
+      // 在watcher中加入dirty逻辑后，可以获取到最新内容了 new houxinchao
     </script>
   </body>
 </html>

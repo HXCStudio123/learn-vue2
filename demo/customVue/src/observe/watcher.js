@@ -16,7 +16,7 @@ export default class Watcher {
     if (options) {
       this.lazy = !!options.lazy;
     }
-    this.dirty = !!this.lazy;
+    this.dirty = this.lazy;
     // watcher初渲染
     this.lazy ? undefined : this.get();
   }
@@ -43,7 +43,12 @@ export default class Watcher {
     return this.value;
   }
   update() {
-    queueWatcher(this);
+    if (this.lazy) {
+      // 有依赖的值发生变化，表示需要获取新值，此时只是更改了获取的computed watcher，不需要视图渲染，此时能拿到新值了
+      this.dirty = true;
+    } else {
+      queueWatcher(this);
+    }
     // this.get();
   }
   run() {
@@ -54,6 +59,7 @@ Dep.target = null;
 let stack = [];
 function pushStack(watcher) {
   stack.push(watcher);
+  debugger;
   Dep.target = watcher;
 }
 function popStack() {
