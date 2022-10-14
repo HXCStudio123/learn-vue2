@@ -290,6 +290,56 @@
     });
   };
 
+  /**
+   * 从这里可以看出Vue的数值优先级子元素更高
+   * @param {*} parent
+   * @param {*} child
+   * @returns
+   */
+  function mergeHook(parent, child) {
+    let res;
+    if (child) {
+      if (parent) {
+        res = parent.concat(child);
+      } else {
+        res = [child];
+      }
+    } else {
+      res = parent;
+    }
+    return res;
+  }
+  const strats = {};
+  const LIFECYCLE_HOOKS = ["beforeCreate", "created"];
+  LIFECYCLE_HOOKS.forEach((hook) => {
+    strats[hook] = mergeHook;
+  });
+  function mergeOptions(parent, child) {
+    let options = {};
+    let key;
+    for (key in parent) {
+      mergeField(key);
+    }
+    for (key in child) {
+      if (!parent[key]) {
+        mergeField(key);
+      }
+    }
+    /**
+     * 策略模式合并
+     * @param {*} key
+     */
+    function mergeField(key) {
+      const strat = strats[key] || defaultStrat;
+      options[key] = strat(parent[key], child[key]);
+    }
+    return options;
+  }
+  // 以生命周期为例其他的不处理
+  function defaultStrat(parent, child) {
+    return child || parent;
+  }
+
   let id$1 = 0;
   /**
    * Dep依赖，其实也是被观察者
@@ -736,7 +786,9 @@
       // 在Vue中一般使用 $xxx 来表示一些Vue的私有属性
       // 在Vue源码中，此处其实是做了一个参数合并的动作
       // 将用户的操作挂载在实例上
-      this.$options = options;
+      // vm.$options = options;
+      const globalOptions = Vue.options;
+      vm.$options = mergeOptions(globalOptions || {}, options);
       vm._self = vm;
       initState(vm);
       // 初始化状态，比如 data/computed/props等等
@@ -779,9 +831,13 @@
      * @param {*} cb
      * @returns
      */
-     Vue.prototype.$watch = function (key, cb) {
+    Vue.prototype.$watch = function (key, cb) {
       const vm = this;
       new Watcher(vm, key, { user: true }, false, cb);
+    };
+    Vue.mixin = function (mixin) {
+      this.options = mergeOptions(this.options || {}, mixin);
+      return this
     };
   }
 

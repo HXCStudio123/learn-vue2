@@ -1,5 +1,5 @@
 import Watcher from "./observe/watcher.js";
-import { nextTick } from "./utils/index.js";
+import { mergeOptions, nextTick } from "./utils/index.js";
 
 export function initGlobal(Vue) {
   Vue.prototype.$nextTick = nextTick;
@@ -9,9 +9,12 @@ export function initGlobal(Vue) {
    * @param {*} cb
    * @returns
    */
-   Vue.prototype.$watch = function (key, cb) {
+  Vue.prototype.$watch = function (key, cb) {
     const vm = this;
     new Watcher(vm, key, { user: true }, false, cb);
   };
+  Vue.mixin = function (mixin) {
+    this.options = mergeOptions(this.options || {}, mixin);
+    return this
+  };
 }
-

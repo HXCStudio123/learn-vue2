@@ -16,6 +16,19 @@
     <!-- <scirpt src="../dist/vue.js"></scirpt> -->
     <script src="./dist/vue.js"></script>
     <script>
+      Vue.mixin({
+        created() {
+          console.log(1);
+        },
+      });
+      Vue.mixin({
+        created() {
+          console.log(2);
+        },
+        beforeCreate() {
+          console.log(2);
+        },
+      });
       const vm = new Vue({
         el: "#app",
         data: {
@@ -38,6 +51,9 @@
           firstName(newValue, oldValue) {
             console.log("更改了", newValue, oldValue);
           },
+        },
+        created() {
+          console.log("内部自定义");
         },
       });
       /**
@@ -112,10 +128,12 @@
       // ------------------------分割线------------------------
       /**
        * 六、watch
-       * 创建$watch，也是watch
+       * 创建$watch，也是watcher
        * 本质上就是针对监听的变量（也就是dep）添加自定义的watcher（也就是watch），在触发get时执行自定义的监听回调
        * */
-      vm.firstName = '测试新'
+      // vm.firstName = '测试新'
+      // ------------------------分割线------------------------
+      console.log(vm);
     </script>
   </body>
 </html>

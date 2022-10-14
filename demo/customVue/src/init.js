@@ -1,6 +1,7 @@
 import { compileToFunctions } from "./compiler/index";
 import { mountComponent } from "./lifecycle";
 import { initState } from "./state";
+import { mergeOptions } from "./utils/index.js";
 
 function initMixin(Vue) {
   Vue.prototype._init = function (options) {
@@ -9,7 +10,9 @@ function initMixin(Vue) {
     // 在Vue中一般使用 $xxx 来表示一些Vue的私有属性
     // 在Vue源码中，此处其实是做了一个参数合并的动作
     // 将用户的操作挂载在实例上
-    this.$options = options;
+    // vm.$options = options;
+    const globalOptions = Vue.options
+    vm.$options = mergeOptions(globalOptions || {}, options)
     vm._self = vm;
     initState(vm);
     // 初始化状态，比如 data/computed/props等等
