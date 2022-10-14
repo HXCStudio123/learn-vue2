@@ -18,15 +18,15 @@
     <script>
       Vue.mixin({
         created() {
-          console.log(1);
+          console.log("mixin1: created");
         },
       });
       Vue.mixin({
         created() {
-          console.log(2);
+          console.log("mixin2: created");
         },
         beforeCreate() {
-          console.log(2);
+          console.log("mixin2: beforeCreated");
         },
       });
       const vm = new Vue({
@@ -53,7 +53,7 @@
           },
         },
         created() {
-          console.log("内部自定义");
+          console.log("内部自定义created");
         },
       });
       /**
@@ -133,7 +133,30 @@
        * */
       // vm.firstName = '测试新'
       // ------------------------分割线------------------------
-      console.log(vm);
+      /**
+       * 七、mixin + 生命周期
+       * 自定义混入实现，本质是策略模式合并
+       * */
+      // ------------------------分割线------------------------
+      /**
+       * 八、事件派发
+       * 发布订阅模式实现事件派发
+       * */
+      function cb1(a, b, c) {
+        console.log("触发挂载1", a, b, c);
+      }
+      function cb2(a, b, c) {
+        console.log("触发挂载2", a, b, c);
+      }
+      function cb3(a, b, c) {
+        console.log("触发挂载3", a, b, c);
+      }
+      vm.$on("test", cb1);
+      vm.$on("test", cb2);
+      vm.$once("test", cb3);
+      vm.$off("test", cb2);
+      vm.$emit("test", "参数1", "参数2", "参数3");
+      vm.$emit("test", "参数1", "参数2", "参数3");
     </script>
   </body>
 </html>

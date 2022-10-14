@@ -27,11 +27,12 @@ export function lifecycleMixin(Vue) {
 }
 
 /**
- * TODO callhook 和 事件发布订阅一起
+ * callhook 和 事件发布订阅一起
  * @param {*} vm
  * @param {*} hook
  */
 export function callHook(vm, hook) {
-  console.log("hook");
-  // 挂载
+  // 批量执行hook
+  const handlers = vm.$options[hook]
+  handlers.forEach(handler => handler.call(vm))
 }

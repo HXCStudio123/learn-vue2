@@ -1,3 +1,4 @@
+import { eventsMixin } from "./events";
 import initMixin from "./init";
 import { initGlobal } from "./initGlobal";
 import { lifecycleMixin } from "./lifecycle";
@@ -8,6 +9,7 @@ function Vue(options) {
 }
 initGlobal(Vue);
 initMixin(Vue);
+eventsMixin(Vue);
 lifecycleMixin(Vue);
 renderMixin(Vue);
 

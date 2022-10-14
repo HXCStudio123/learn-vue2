@@ -65,6 +65,7 @@ export function eventsMixin (Vue: Class<Component>) {
   const hookRE = /^hook:/
   Vue.prototype.$on = function (event: string | Array<string>, fn: Function): Component {
     const vm: Component = this
+    console.log(vm._events)
     if (Array.isArray(event)) {
       for (let i = 0, l = event.length; i < l; i++) {
         vm.$on(event[i], fn)
@@ -124,6 +125,7 @@ export function eventsMixin (Vue: Class<Component>) {
         break
       }
     }
+    console.log(vm._events)
     return vm
   }
 

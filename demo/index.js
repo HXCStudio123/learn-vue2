@@ -1,5 +1,5 @@
-import Vue from 'vue'
-console.log(1)
+import Vue from "vue";
+console.log(1);
 new Vue({
   el: "#app",
   // data: {
@@ -34,7 +34,13 @@ new Vue({
     },
   },
   created() {
-    console.log(1);
+    this.$once("test", cb1);
+    // this.$on("test", () => {
+    //   console.log("测试挂载2");
+    // });
+    // this.$on("test", () => {
+    //   console.log("测试挂载3");
+    // });
   },
   mounted() {
     console.log(this.$refs.firstDom);
@@ -44,7 +50,14 @@ new Vue({
       this.firstName = "John";
     },
     test() {
-      console.log('11')
-    }
+      console.log("11");
+      this.$emit("test");
+      // this.$off('test', () => {
+      //   console.log("测试挂载2");
+      // });
+    },
   },
 });
+function cb1() {
+  console.log("测试挂载1");
+}
