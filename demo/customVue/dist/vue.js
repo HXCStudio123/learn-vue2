@@ -323,16 +323,29 @@
    * 观察者
    */
   class Watcher {
-    constructor(vm, fn, options, renderWatcher) {
+    constructor(vm, expOrFn, options, renderWatcher, cb) {
       this.id = id++;
       this.vm = vm;
+      this.cb = cb;
       this.renderWatcher = renderWatcher;
-      this.getter = fn;
+      /**
+       * expOrFn 和 cb
+       * expOrFn：是自定义获取对应值的表达式（或字符串）
+       * cb：是获取触发时的回调函数
+       */
+      if (typeof expOrFn === "string") {
+        this.getter = function () {
+          return this[expOrFn];
+        };
+      } else {
+        this.getter = expOrFn;
+      }
       this.newDeps = [];
       this.newDepsId = new Set();
-      // 懒更新 computed
+      // 懒更新 computed & watch(用户自定义的watch)
       if (options) {
         this.lazy = !!options.lazy;
+        this.user = !!options.user;
       }
       this.dirty = this.lazy;
       // watcher初渲染
@@ -353,11 +366,14 @@
       this.value = this.get();
     }
     get() {
-      // Dep.target = this;
+      // debugger;
+      const oldValue = this.value;
       pushStack(this);
       this.value = this.getter.call(this.vm);
       popStack();
-      // Dep.target = null;
+      if (this.user) {
+        this.cb.call(this.vm, this.value, oldValue);
+      }
       return this.value;
     }
     update() {
@@ -374,7 +390,7 @@
     }
     // 给当前watcher添加dep依赖
     depend() {
-      for(let dep of this.newDeps) {
+      for (let dep of this.newDeps) {
         dep.depend();
       }
     }
@@ -667,6 +683,9 @@
     if (opts.computed) {
       initComputed(vm, opts.computed);
     }
+    if (opts.watch) {
+      initWatch(vm, opts.watch);
+    }
   }
 
   function initComputed(vm, computed) {
@@ -699,6 +718,15 @@
       }
       return watcher.value;
     };
+  }
+
+  function initWatch(target, watch) {
+    for (let key in watch) {
+      createWatcher(target, key, watch[key]);
+    }
+  }
+  function createWatcher(vm, key, cb) {
+    vm.$watch(key, cb);
   }
 
   function initMixin(Vue) {
@@ -745,7 +773,16 @@
 
   function initGlobal(Vue) {
     Vue.prototype.$nextTick = nextTick;
-    Vue.prototype.$watch = function () {};
+    /**
+     * 监听dep，当dep有变化是更新通知对应的watcher，并执行回调函数
+     * @param {*} key
+     * @param {*} cb
+     * @returns
+     */
+     Vue.prototype.$watch = function (key, cb) {
+      const vm = this;
+      new Watcher(vm, key, { user: true }, false, cb);
+    };
   }
 
   function createElement(context, tag, key, data, children) {

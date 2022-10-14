@@ -42,6 +42,9 @@ export function initState(vm) {
   if (opts.computed) {
     initComputed(vm, opts.computed);
   }
+  if (opts.watch) {
+    initWatch(vm, opts.watch);
+  }
 }
 
 function initComputed(vm, computed) {
@@ -74,4 +77,13 @@ function createComputedGetter(watcher) {
     }
     return watcher.value;
   };
+}
+
+function initWatch(target, watch) {
+  for (let key in watch) {
+    createWatcher(target, key, watch[key]);
+  }
+}
+function createWatcher(vm, key, cb) {
+  vm.$watch(key, cb);
 }

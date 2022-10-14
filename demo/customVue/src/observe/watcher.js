@@ -6,16 +6,29 @@ let id = 0;
  * 观察者
  */
 export default class Watcher {
-  constructor(vm, fn, options, renderWatcher) {
+  constructor(vm, expOrFn, options, renderWatcher, cb) {
     this.id = id++;
     this.vm = vm;
+    this.cb = cb;
     this.renderWatcher = renderWatcher;
-    this.getter = fn;
+    /**
+     * expOrFn 和 cb
+     * expOrFn：是自定义获取对应值的表达式（或字符串）
+     * cb：是获取触发时的回调函数
+     */
+    if (typeof expOrFn === "string") {
+      this.getter = function () {
+        return this[expOrFn];
+      };
+    } else {
+      this.getter = expOrFn;
+    }
     this.newDeps = [];
     this.newDepsId = new Set();
-    // 懒更新 computed
+    // 懒更新 computed & watch(用户自定义的watch)
     if (options) {
       this.lazy = !!options.lazy;
+      this.user = !!options.user;
     }
     this.dirty = this.lazy;
     // watcher初渲染
@@ -36,11 +49,14 @@ export default class Watcher {
     this.value = this.get();
   }
   get() {
-    // Dep.target = this;
+    // debugger;
+    const oldValue = this.value;
     pushStack(this);
     this.value = this.getter.call(this.vm);
     popStack();
-    // Dep.target = null;
+    if (this.user) {
+      this.cb.call(this.vm, this.value, oldValue);
+    }
     return this.value;
   }
   update() {
@@ -57,8 +73,8 @@ export default class Watcher {
   }
   // 给当前watcher添加dep依赖
   depend() {
-    for(let dep of this.newDeps) {
-      dep.depend()
+    for (let dep of this.newDeps) {
+      dep.depend();
     }
   }
 }

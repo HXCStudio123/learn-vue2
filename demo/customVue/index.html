@@ -8,10 +8,11 @@
   </head>
   <body>
     <!-- <div id="app">{{fullname}} {{fullname}} {{fullname}}</div> -->
-    <div id="app">
+    <!-- <div id="app">
       text
       <h1>{{msg}}hello{{msg}}hello</h1>
-    </div>
+    </div> -->
+    <div id="app">test</div>
     <!-- <scirpt src="../dist/vue.js"></scirpt> -->
     <script src="./dist/vue.js"></script>
     <script>
@@ -113,9 +114,7 @@
        * 六、watch
        * 创建$watch，也是watch
        * */
-      vm.$watch("fisrtName", (newValue, oldValue) => {
-        console.log(newValue, oldValue);
-      });
+      vm.firstName = '测试新'
     </script>
   </body>
 </html>
