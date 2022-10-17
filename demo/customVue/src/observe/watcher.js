@@ -90,20 +90,20 @@ function popStack() {
 }
 
 let queue = [];
-let watcherIds = new Set();
+let has = {};
 let pending = false;
 
 /**
  * 批处理watcher更新
  */
 function flushSchedulerQueue() {
-  for (let watcher of queue) {
-    watcher.run();
-  }
-  // 执行后状态初始化
-  pending = false;
-  queue = [];
-  watcherIds = new Set();
+  const watchers = queue.slice()
+  queue.length = 0
+  watchers.forEach((watcher) => {
+    watcher.run()
+    has[watcher.id] = false
+  })
+  pending = false
 }
 
 /**
@@ -112,10 +112,10 @@ function flushSchedulerQueue() {
  */
 function queueWatcher(watcher) {
   // 查看是否有重复的watcher
-  if (!watcherIds.has(watcher.id)) {
+  if (!has[watcher.id]) {
     // 添加进队列等待统一处理
     queue.push(watcher);
-    watcherIds.add(watcher.id);
+    has[watcher.id] = true
   }
   if (!pending) {
     pending = true;

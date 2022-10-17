@@ -29,9 +29,11 @@ if (Promise) {
 }
 
 function flushCallbacks() {
-  callbacks.forEach((cb) => cb());
-  callbacks = [];
-  waiting = false;
+  const cbs = callbacks.slice(0)
+  // 不能直接cbs执行后清空callbacks，因为在执行next时可能有其他子渲染执行，此时需要区分开当前渲染队列和子渲染队列，分别执行
+  callbacks.length = 0
+  waiting = false
+  cbs.forEach((cb) => cb.call(this))
 }
 
 /**
